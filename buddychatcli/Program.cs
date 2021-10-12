@@ -10,30 +10,16 @@ namespace BuddyChatCLI
         public static readonly string ParticipantsFileName = "participants.json";
         public static readonly string PairingHistoryFileName = "pairing_history.json";
 
-        static int Test(BuddyChatCommand command)
-        {
-            Console.WriteLine("Command: " + command);
-            return 0;
-        }
-
-        static async Task<int> Main(string[] args)
+        static int Main(string[] args)
         {
             Console.WriteLine("Hello World!");
             
-            return await Parser.Default.ParseArguments<CommandLineOptions>(args)
-                .MapResult(async (CommandLineOptions opts) => 
-                {
-                    try 
-                    {
-                        return Test(opts.Command);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Exception thrown!");
-                        return -1;
-                    }
-                },
-                errs => Task.FromResult(-1));
+            CommandLineOptions options = new CommandLineOptions();
+            options.ParseCommandline(args);
+
+            Console.WriteLine("Command: " + options.Command);
+
+            return 0;
         }
     }
 }
