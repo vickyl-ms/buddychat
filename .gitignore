@@ -27,3 +27,4 @@ x64/
 
 # Visual Studio Code
 .vscode/
+*.code-workspace
