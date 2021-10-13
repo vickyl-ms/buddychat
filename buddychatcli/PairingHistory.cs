@@ -5,11 +5,11 @@ namespace BuddyChatCLI
     // This class represents the pairing history for a participant.
     public class PairingHistory
     {
-        public string participant_id;
+        public string email;
 
         public struct PairingHistoryEntry
         {
-            public string buddy_participant_id;
+            public string buddy_email;
             public string sessionId;
         }
 
