@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BuddyChatCLI
 {
@@ -20,6 +19,5 @@ namespace BuddyChatCLI
         // participant data
         public Dictionary<string, string> data { get; set; }
     }
-
 }
 
