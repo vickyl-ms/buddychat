@@ -7,6 +7,7 @@ namespace BuddyChatCLI
 {
     // Set of commands recognized by BuddyChatCLI
     public enum BuddyChatCommand {
+        InvalidCommand,
         Update,
         CreatePairings,
         CreateEmails
@@ -24,12 +25,19 @@ namespace BuddyChatCLI
                 HelpText = "Path to historical files. Expecting a participant.json file in folder. Defaults to current directory")]
         public string HistoricalDataPath { get; set; }
         
-        public void ParseCommandline(string[] args)
+        public bool ParseCommandline(string[] args)
         {
+            bool hasParsingErrors = false;
             var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
-
+            
             parser.ParseArguments<CommandLineOptions>(args)
-                .WithNotParsed<CommandLineOptions>((errs) => this.ReportErrors(errs));
+                .WithNotParsed<CommandLineOptions>((errs) => 
+                {
+                    this.ReportErrors(errs);
+                    hasParsingErrors = true;
+                });
+
+            return !hasParsingErrors;
         }
 
         public void ReportErrors(IEnumerable<Error> errors)

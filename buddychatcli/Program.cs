@@ -15,10 +15,12 @@ namespace BuddyChatCLI
             Console.WriteLine("Hello World!");
             
             CommandLineOptions options = new CommandLineOptions();
-            options.ParseCommandline(args);
+            if (!options.ParseCommandline(args))
+            {
+                return -1;
+            }
 
             Console.WriteLine("Command: " + options.Command);
-
             return 0;
         }
     }
