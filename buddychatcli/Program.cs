@@ -12,15 +12,6 @@ namespace BuddyChatCLI
         ErrorCommandFailed = -3
     }
 
-    // Set of commands recognized by BuddyChatCLI
-    public enum BuddyChatCommand 
-    {
-        InvalidCommand,
-        Update,
-        CreatePairings,
-        CreateEmails
-    }
-
     public class Program
     {
         public static readonly string SignUpFileName = "signup.csv";
@@ -36,7 +27,7 @@ namespace BuddyChatCLI
                     .MapResult(
                       (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                       (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
-                      errs => 1);
+                      errs => (int)ReturnCode.ErrorParsingCommandLine);
         }
     }
 }
