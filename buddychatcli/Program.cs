@@ -1,6 +1,5 @@
 ﻿using System;
 using CommandLine;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace BuddyChatCLI
@@ -51,6 +50,9 @@ namespace BuddyChatCLI
             {
                 case BuddyChatCommand.CreatePairings:
                     returnCode = PairingGenerator.ExecutePairingGenerator(options);
+                    break;
+                case BuddyChatCommand.CreateEmails:
+                    returnCode = EmailGenerator.ExecuteEmailGenerator(options);
                     break;
                 default:
                     returnCode = ReturnCode.ErrorInvalidCommand;
