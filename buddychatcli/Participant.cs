@@ -8,7 +8,7 @@ namespace BuddyChatCLI
         public int participant_id { get; set; }
         
         // list of all the sessions the participant had participated
-        public List<int> session_participated { get; set; }
+        public List<string> session_participated { get; set; }
         
         // participant full name
         public string name { get; set; }

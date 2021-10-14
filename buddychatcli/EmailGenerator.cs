@@ -42,6 +42,11 @@ namespace buddychatcli
             this.outputFolder = outputFolder;
         }
 
+        public static int ExecuteEmailGenerator(CommandLineOptions options)
+        {
+
+        }
+
         /// <summary>
         /// Generates an email replacing the placeholders for each participant.
         /// </summary>
