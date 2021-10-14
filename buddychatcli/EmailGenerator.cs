@@ -11,8 +11,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Message = MsgReader.Outlook.Storage.Message;
 
-[assembly: InternalsVisibleTo("buddychatcli.test")]
-namespace buddychatcli
+[assembly: InternalsVisibleTo("BuddyChatCLI.test")]
+namespace BuddyChatCLI
 {
     public class EmailGenerator
     {
@@ -133,6 +133,7 @@ namespace buddychatcli
 
         /// <summary>
         /// This class was taken from the MsgKit library to set BodyRtf in the Email template.
+        /// https://github.com/Sicos1977/MsgKit/blob/3d963e9051f0bbeaf895f9466d3aecfe9d83d6e4/MsgKit/Helpers/Strings.cs#L147
         /// </summary>
         private static string GetEscapedRtf(string str)
         {

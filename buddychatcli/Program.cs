@@ -1,7 +1,5 @@
 ﻿using System;
 using CommandLine;
-using System.Threading.Tasks;
-using buddychatcli;
 using System.Collections.Generic;
 
 namespace BuddyChatCLI

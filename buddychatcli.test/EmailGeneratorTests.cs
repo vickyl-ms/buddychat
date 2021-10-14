@@ -1,12 +1,7 @@
-﻿using BuddyChatCLI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Xunit;
 
-namespace buddychatcli.test
+namespace BuddyChatCLI.test
 {
     public class EmailGeneratorTests
     {
