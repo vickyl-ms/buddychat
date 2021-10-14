@@ -1,5 +1,7 @@
+using CommandLine;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace BuddyChatCLI
@@ -10,31 +12,32 @@ namespace BuddyChatCLI
         public Participant participant2;
     }
 
+    [Verb("CreatePairings", HelpText = "Creates the random assignments.")]
     public class PairingGenerator
     {
         private Random rng = new Random();  
 
-        private string sessionId;
+        [Option(shortName: 's',
+                longName: "sessionId",
+                Required = true,
+                HelpText = "The id for this specific session.")]
+        public string SessionId { get; set; }
 
-        private string pathToHistoricalData;
+        [Option(shortName: 'p',
+                longName: "pathToHistoricalData",
+                Required = false,
+                HelpText = "The location of participant and history json. Default is current directory.")]
+        public string PathToHistoricalData { get; set; } = Directory.GetCurrentDirectory();
 
-        private string outputPath;
+        [Option(shortName: 'o',
+                longName: "outputPath",
+                Required = false,
+                HelpText = "Output location. Default is current directory.")]
+        public string OutputPath { get; set; } = Directory.GetCurrentDirectory();
 
-        // Takes in commandline options and returns a success int code
-        public static ReturnCode ExecutePairingGenerator(CommandLineOptions options)
+        public int Execute()
         {
-            return ReturnCode.ErrorCommandFailed;
-        }
-
-        // Inputs
-        // - location of participant and history json - default to current dir or current dir + session id
-        // - session id
-        // - output location - default to session id + number of tries
-        public PairingGenerator(string sessionId = "", string pathToHistoricalData = "", string outputPath = "")
-        {
-            this.sessionId = sessionId;
-            this.pathToHistoricalData = pathToHistoricalData;
-            this.outputPath = outputPath;
+            return 0;
         }
 
         // Validate & generate default path values
