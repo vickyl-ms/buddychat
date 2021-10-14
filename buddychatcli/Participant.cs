@@ -22,6 +22,7 @@ namespace BuddyChatCLI
 
         public override string ToString()
         {
+            displayDictionaryData(data);
             return "Name: " + name + "   Email: " + email;
         }
 
