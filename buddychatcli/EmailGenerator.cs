@@ -6,10 +6,12 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Message = MsgReader.Outlook.Storage.Message;
 
+[assembly: InternalsVisibleTo("buddychatcli.test")]
 namespace buddychatcli
 {
     public class EmailGenerator
@@ -42,9 +44,9 @@ namespace buddychatcli
             this.outputFolder = outputFolder;
         }
 
-        public static int ExecuteEmailGenerator(CommandLineOptions options)
+        public static ReturnCode ExecuteEmailGenerator(CommandLineOptions options)
         {
-
+            return ReturnCode.ErrorCommandFailed;
         }
 
         /// <summary>

@@ -55,6 +55,7 @@ namespace BuddyChatCLI
                     break;
                 case BuddyChatCommand.CreateEmails:
                     returnCode = EmailGenerator.ExecuteEmailGenerator(options);
+                    break;
                 default:
                     returnCode = ReturnCode.ErrorInvalidCommand;
                     throw new Exception($"Command '{options.Command}' is not implemented yet.");
