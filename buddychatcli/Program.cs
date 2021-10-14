@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandLine;
 using System.Threading.Tasks;
+using buddychatcli;
 
 namespace BuddyChatCLI
 {
@@ -18,6 +19,9 @@ namespace BuddyChatCLI
             options.ParseCommandline(args);
 
             Console.WriteLine("Command: " + options.Command);
+
+            EmailGenerator emailGenerator = new EmailGenerator();
+            emailGenerator.CreateItemFromTemplate();
 
             return 0;
         }

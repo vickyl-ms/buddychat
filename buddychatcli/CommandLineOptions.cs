@@ -23,7 +23,7 @@ namespace BuddyChatCLI
                 Required = false, 
                 HelpText = "Path to historical files. Expecting a participant.json file in folder. Defaults to current directory")]
         public string HistoricalDataPath { get; set; }
-        
+
         public void ParseCommandline(string[] args)
         {
             var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
