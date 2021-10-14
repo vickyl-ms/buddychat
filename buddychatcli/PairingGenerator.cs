@@ -21,9 +21,9 @@ namespace BuddyChatCLI
         private string outputPath;
 
         // Takes in commandline options and returns a success int code
-        public static int ExecutePairingGenerator(CommandLineOptions options)
+        public static ReturnCode ExecutePairingGenerator(CommandLineOptions options)
         {
-            return -1;
+            return ReturnCode.ErrorCommandFailed;
         }
 
         // Inputs
