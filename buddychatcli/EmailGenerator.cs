@@ -58,8 +58,9 @@ namespace buddychatcli
         public void GenerateEmail(Participant participant1, Participant participant2)
         {
             string newHtmlBody = ReplacePlaceholders(htmlBody, participant1, participant2);
+            string file = Path.Combine(this.outputFolder, $"{participant1.name} - {participant2.name}.oft");
 
-            var email = new Email(null, subject);
+            Email email = new Email(null, subject);
             email.Recipients.AddTo(participant1.email);
             email.Recipients.AddTo(participant2.email);
             email.IconIndex = MessageIconIndex.UnreadMail;
@@ -68,9 +69,9 @@ namespace buddychatcli
             // *.msg files can't be sent directly from Outlook so we would have to forward the message if we used this file type.
             // As a workaround, we can set BodyRtf and save the file as .oft. This creates a template file that we can open and send from Outlook.
             email.BodyRtf = GetEscapedRtf(newHtmlBody);
-            email.Save(Path.Combine(this.outputFolder, $"{participant1.name} - {participant2.name}.oft"));
+            email.Save(file);
 
-            Console.WriteLine("Emails have been created");
+            Console.WriteLine($"Email has been generated: {file}");
         }
 
         /// <summary>
