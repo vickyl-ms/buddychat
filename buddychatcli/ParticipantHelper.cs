@@ -8,6 +8,13 @@ namespace BuddyChatCLI
     {
         public static readonly string KEY_INTRO = "intro";
         public static readonly string KEY_PRONOUNS = "pronouns";
+        public static readonly string KEY_QUESTION1 = "question1";
+        public static readonly string KEY_ANSWER1 = "answer1";
+        public static readonly string KEY_QUESTION2 = "question2";
+        public static readonly string KEY_ANSWER2 = "answer2";
+        public static readonly string KEY_QUESTION3 = "question3";
+        public static readonly string KEY_ANSWER3 = "answer3";
+
         public static readonly string STRING_YES_SIGNED_BEFORE = "Yes, I have signed up before.";
         public static readonly string STRING_YES_REUSE = "Yes, please reuse the intro and questions from when I signed up in the past.";
         public static readonly string STRING_NO_NEW_ANSWERS = "No, I want to enter my introduction and new questions and answers.";
@@ -32,48 +39,7 @@ namespace BuddyChatCLI
                 {
                     // Read current line fields, pointer moves to the next line.
                     string[] fields = csvParser.ReadFields();
-
-                    string email = fields[1];
-                    string name = fields[2];
-
-                    Dictionary<string, string> participantDataDict = new Dictionary<string, string>();
-                    
-                    if (!string.IsNullOrEmpty(fields[4])){
-                        string pronouns = fields[4];
-                        participantDataDict.Add(KEY_PRONOUNS, pronouns);
-                    }
-                    
-                    if(!string.IsNullOrEmpty(fields[6])) {
-                        string intro = fields[6];
-                        participantDataDict.Add(KEY_INTRO, intro);
-                    }
-
-                    if (!string.IsNullOrEmpty(fields[7]))
-                    {
-                        string question1 = fields[7];
-                        string answer1 = fields[8];
-                        participantDataDict.Add(question1, answer1);
-                    }
-
-                    if (!string.IsNullOrEmpty(fields[9]))
-                    {
-                        string question2 = fields[9];
-                        string answer2 = fields[10];
-                        participantDataDict.Add(question2, answer2);
-                    }
-
-                    if (!string.IsNullOrEmpty(fields[11]))
-                    {
-                        string question3 = fields[11];
-                        string answer3 = fields[12];
-                        participantDataDict.Add(question3, answer3);
-                    }
-                    
-                    // Creating Person object
-                    Participant participant = new Participant();
-                    participant.email = email;
-                    participant.name = name;
-                    participant.data = participantDataDict;
+                    Participant participant = createParticipantData(fields,1,2,4,6,7,9,11);
                     totalparticipantData.Add(participant);
                 }
             }
@@ -101,14 +67,11 @@ namespace BuddyChatCLI
                 {
                     // Read current line fields, pointer moves to the next line.
                     string[] fields = csvParser.ReadFields();
-
                     string email = fields[2];
-                    string name = fields[3];
-
+                    
                     Participant person = new Participant();
                     person.email = email;
-                    person.name = name;
-
+           
                     if (existingParticipants.Contains(person))
                     {
                         if ((!string.IsNullOrEmpty(fields[4])) && (STRING_YES_SIGNED_BEFORE.Equals(fields[4])))
@@ -127,45 +90,75 @@ namespace BuddyChatCLI
                         
                     }
 
-                    Dictionary<string, string> participantDataDict = new Dictionary<string, string>();
-
-                    if (!string.IsNullOrEmpty(fields[6]))
-                    {
-                        string pronouns = fields[6];
-                        participantDataDict.Add(KEY_PRONOUNS, pronouns);
-                    }
-
-                    if (!string.IsNullOrEmpty(fields[6]))
-                     {
-                        string intro = fields[8];
-                         participantDataDict.Add(KEY_INTRO, intro);
-                    }
-
-                        if (!string.IsNullOrEmpty(fields[9]))
-                        {
-                            string question1 = fields[9];
-                            string answer1 = fields[10];
-                            participantDataDict.Add(question1, answer1);
-                        }
-
-                        if (!string.IsNullOrEmpty(fields[11]))
-                        {
-                            string question2 = fields[11];
-                            string answer2 = fields[12];
-                            participantDataDict.Add(question2, answer2);
-                        }
-
-                        if (!string.IsNullOrEmpty(fields[13]))
-                        {
-                            string question3 = fields[13];
-                            string answer3 = fields[14];
-                            participantDataDict.Add(question3, answer3);
-                        }
-                        person.data = participantDataDict;
-                        existingParticipants.Add(person);
+                    // Create a new entry
+                    Participant participant = createParticipantData(fields, 2, 3, 6, 8, 9, 11, 13);
+                    existingParticipants.Add(participant);
                 }
             }
             return existingParticipants;
+        }
+
+        /// <summary>
+        /// This method returns a participant data object from the fields array which has the parsed csv data
+        /// </summary>
+        /// <param name="fields">String array of the parsed csv data in column format </param>
+        /// <param name="emailFieldNum">The index position of email field value in the fields array </param>
+        /// <param name="nameFieldNum">The index position of name field value in the fields array </param>
+        /// <param name="pronounFieldNum">The index position of pronouns field value in the fields array if present </param>
+        /// <param name="introFieldNum">The index position of intro field value in the fields array if present </param>
+        /// <param name="question1FieldNum">The index position of question1 field value in the fields array if present </param>
+        /// <param name="question2FieldNum">The index position of question2 field value in the fields array if present </param>
+        /// <param name="question3FieldNum">The index position of question3 field value in the fields array if present </param>
+        private Participant createParticipantData(String[] fields, int emailFieldNum, int nameFieldNum, int pronounsFieldNum, int introFieldNum, int question1FieldNum, int question2FieldNum, int question3FieldNum)
+        {
+            string email = fields[emailFieldNum];
+            string name = fields[nameFieldNum];
+
+            Dictionary<string, string> participantDataDict = new Dictionary<string, string>();
+
+            if (!string.IsNullOrEmpty(fields[pronounsFieldNum])) //4
+            {
+                string pronouns = fields[pronounsFieldNum]; //4
+                participantDataDict.Add(KEY_PRONOUNS, pronouns);
+            }
+
+            if (!string.IsNullOrEmpty(fields[introFieldNum])) //6
+            {
+                string intro = fields[introFieldNum];
+                participantDataDict.Add(KEY_INTRO, intro);
+            }
+
+            if (!string.IsNullOrEmpty(fields[question1FieldNum])) //7
+            {
+                string question1 = fields[question1FieldNum]; //7
+                string answer1 = fields[question1FieldNum + 1]; //8
+                participantDataDict.Add(KEY_QUESTION1, question1);
+                participantDataDict.Add(KEY_ANSWER1, answer1);
+            }
+
+            if (!string.IsNullOrEmpty(fields[question2FieldNum]))
+            {
+                string question2 = fields[question2FieldNum];
+                string answer2 = fields[question2FieldNum + 1];
+                participantDataDict.Add(KEY_QUESTION2, question2);
+                participantDataDict.Add(KEY_ANSWER2, answer2);
+            }
+
+            if (!string.IsNullOrEmpty(fields[question3FieldNum]))
+            {
+                string question3 = fields[question3FieldNum];
+                string answer3 = fields[question3FieldNum + 1];
+                participantDataDict.Add(KEY_QUESTION3, question3);
+                participantDataDict.Add(KEY_ANSWER3, answer3);
+            }
+
+            // Creating Person object
+            Participant participant = new Participant {
+                email = email,
+                name = name,
+                data = participantDataDict
+            };
+            return participant;
         }
     }  
 }
