@@ -1,4 +1,5 @@
 ﻿using BuddyChatCLI;
+using CommandLine;
 using MsgKit;
 using MsgKit.Enums;
 using Newtonsoft.Json;
@@ -14,11 +15,11 @@ using Message = MsgReader.Outlook.Storage.Message;
 [assembly: InternalsVisibleTo("BuddyChatCLI.test")]
 namespace BuddyChatCLI
 {
+    [Verb("CreateEmails", HelpText = "Creates the emails based on a json file with the pairings information.")]
     public class EmailGenerator
     {
         private string subject;
         private string htmlBody;
-        private string outputFolder;
 
         /// <summary>
         /// Regex expression used to identify the first participant fields.
@@ -32,21 +33,23 @@ namespace BuddyChatCLI
         /// </summary>
         private static readonly Regex SecondParticipantRegex = new Regex("&lt;participant2\\.(?<property>[\\w\\.]*)&gt;", RegexOptions.IgnoreCase);
 
-        public EmailGenerator(string templatePath, string outputFolder = null)
+        [Option(shortName: 't',
+                longName: "templatePath",
+                Required = true,
+                HelpText = "Path to Outlook template file in .oft format.")]
+        public string TemplatePath { get; set; }
+
+        [Option(shortName: 'o',
+                longName: "outputPath",
+                Required = false,
+                HelpText = "Path to the output folder where the emails will be created. Default is current directory.")]
+        public string OutputFolder { get; set; } = Directory.GetCurrentDirectory();
+
+        public int Execute()
         {
-            (this.subject, this.htmlBody) = ReadTemplate(templatePath);
+            (this.subject, this.htmlBody) = ReadTemplate(TemplatePath);
 
-            if (string.IsNullOrEmpty(outputFolder))
-            {
-                outputFolder = Directory.GetCurrentDirectory();
-            }
-
-            this.outputFolder = outputFolder;
-        }
-
-        public static ReturnCode ExecuteEmailGenerator(CommandLineOptions options)
-        {
-            return ReturnCode.ErrorCommandFailed;
+            return 0;
         }
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace BuddyChatCLI
         public void GenerateEmail(Participant participant1, Participant participant2)
         {
             string newHtmlBody = ReplacePlaceholders(htmlBody, participant1, participant2);
-            string file = Path.Combine(this.outputFolder, $"{participant1.name} - {participant2.name}.oft");
+            string file = Path.Combine(this.OutputFolder, $"{participant1.name} - {participant2.name}.oft");
 
             Email email = new Email(null, subject);
             email.Recipients.AddTo(participant1.email);
