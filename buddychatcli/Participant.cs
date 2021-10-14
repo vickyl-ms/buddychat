@@ -44,7 +44,7 @@ namespace BuddyChatCLI
 
         public bool Equals(Participant participant)
         {
-            return participant != null && name.Equals(participant.name);
+            return participant != null && email.Equals(participant.email);
         }
 
         public override int GetHashCode()
