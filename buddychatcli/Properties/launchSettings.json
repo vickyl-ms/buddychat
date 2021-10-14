@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "buddychatcli": {
-      "commandName": "Project",
-      "commandLineArgs": "CreateEmails"
-    }
-  }
-}
