@@ -39,6 +39,12 @@ namespace BuddyChatCLI
                 HelpText = "Path to Outlook template file in .oft format.")]
         public string TemplatePath { get; set; }
 
+        [Option(shortName: 'p',
+                longName: "pairingsPath",
+                Required = true,
+                HelpText = "Path to json file containing the pairings.")]
+        public string Pairings { get; set; }
+
         [Option(shortName: 'o',
                 longName: "outputPath",
                 Required = false,
@@ -48,6 +54,13 @@ namespace BuddyChatCLI
         public int Execute()
         {
             (this.subject, this.htmlBody) = ReadTemplate(TemplatePath);
+
+            IEnumerable<PairingEntry> pairings = GetPairingsFromFile(this.Pairings);
+
+            foreach(PairingEntry pairing in pairings)
+            {
+                GenerateEmail(pairing.participant1, pairing.participant2);
+            }
 
             return 0;
         }
@@ -75,6 +88,18 @@ namespace BuddyChatCLI
             email.Save(file);
 
             Console.WriteLine($"Email has been generated: {file}");
+        }
+
+        /// <summary>
+        /// Deserializes input file into a list of <see cref="PairingEntry"/>
+        /// </summary>
+        /// <param name="filePath">The file path</param>
+        /// <returns>List of <see cref="PairingEntry"/></returns>
+        internal static IEnumerable<PairingEntry> GetPairingsFromFile(string filePath)
+        {
+            string pairingsJson = File.ReadAllText(filePath);
+
+            return JsonConvert.DeserializeObject<IEnumerable<PairingEntry>>(pairingsJson);
         }
 
         /// <summary>
