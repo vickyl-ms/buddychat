@@ -116,6 +116,18 @@ namespace BuddyChatCLI
             htmlBody = ReplaceParticipantPlaceholders(htmlBody, FirstParticipantRegex, participant1);
             htmlBody = ReplaceParticipantPlaceholders(htmlBody, SecondParticipantRegex, participant2);
 
+            // Workaround to remove duplicated emojis
+            IEnumerable<string> emojis = new string[]
+            {
+                "&#127930;", // Trumpet
+                "&#128522;" // Smiling face
+            };
+
+            foreach(string emoji in emojis)
+            {
+                htmlBody = htmlBody.Replace(emoji + emoji, emoji);
+            }
+
             return htmlBody;
         }
 
