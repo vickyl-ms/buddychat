@@ -44,7 +44,7 @@ namespace BuddyChatCLI
         public int Execute()
         {
             helper = new ParticipantHelper();
-            participantList = helper.createParticipantDataFromExistingCSVFile(Program.SignUpFileName);
+            participantList = helper.createParticipantDataFromExistingCSVFile(Defaults.SignUpFileName);
             participantList = helper.createParticipantDataFromNewSessionCSVFileAndMergeWithExisting(NEW_SESSION, participantList);
             
             string strFilePath = newSignupListPath+"\\AllParticipantData.csv";
