@@ -250,7 +250,7 @@ namespace BuddyChatCLI.test
         }
 
         [Fact]
-        public void Generate_ReadFromFiles()
+        public void Execute_ReadFromFiles()
         {
             string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData");
             PairingGenerator generator = new PairingGenerator {
@@ -258,7 +258,7 @@ namespace BuddyChatCLI.test
                 SessionId = "Current"
             };
             
-            generator.Generate();
+            generator.Execute();
 
             string expectedOutputFile = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
             Assert.True(File.Exists(expectedOutputFile));

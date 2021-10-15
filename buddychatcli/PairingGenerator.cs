@@ -47,23 +47,18 @@ namespace BuddyChatCLI
                 HelpText = "Output location. Default is current directory.")]
         public string OutputPath { get; set; } = Directory.GetCurrentDirectory();
 
-        public int Execute()
-        {
-            return 0;
-        }
-
         /// <summary>
         /// Validate and generate default options. Read in historical data.
         /// </summary>
         /// <returns>List of Pairing entries</returns>
-        public ReturnCode Generate()
+        public int Execute()
         {
             ValidateOptions();
             IEnumerable<Participant> participants = ReadInParticipantFile();
             Dictionary<string, PairingHistory> pairingHistories = ReadInPairingHistoryFile();
             IEnumerable<PairingEntry> pairings = Generate(this.SessionId, participants, pairingHistories);
             WritePairingsToFile(pairings);
-            return ReturnCode.Success;
+            return Convert.ToInt32(ReturnCode.Success);
         }
 
         /// <summary>
@@ -71,8 +66,10 @@ namespace BuddyChatCLI
         /// </summary>
         private void WritePairingsToFile(IEnumerable<PairingEntry> pairings)
         {
+            string outputFile = Path.Combine(this.OutputPath, Defaults.NewPairingFileName);
+            Console.WriteLine($"Writing output to {outputFile}.");
             File.WriteAllText(
-                Path.Combine(this.OutputPath, Defaults.NewPairingFileName),
+                outputFile,
                 JsonConvert.SerializeObject(pairings, Formatting.Indented));
         }
 
@@ -130,14 +127,22 @@ namespace BuddyChatCLI
         {
             IEnumerable<Participant> sessionParticipants = FindAllParticipantsInSession(sessionId, participants);
             ValidateEvenNumberParticipants(sessionParticipants);
-            
+            Console.WriteLine($"{sessionParticipants.Count()} participants found for session '{sessionId}'.");
+
             // Generate pairings until there is one without collisions
             IEnumerable<PairingEntry> candidatePairing;
 
             do {
                 candidatePairing = GenerateRandomPairings(sessionParticipants);
             } while (!ValidatePairing(candidatePairing, pairingHistories));
-            
+
+            Console.WriteLine($"Pairing results:");
+            int i = 0;
+            foreach (PairingEntry pair in candidatePairing)
+            {
+                Console.WriteLine($"\t{++i}: '{pair.participant1.email}' and '{pair.participant2.email}'");
+            }
+
             return candidatePairing;
         }
 

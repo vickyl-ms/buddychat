@@ -25,7 +25,7 @@ namespace BuddyChatCLI
             // Create a case insensitive parser
             var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
 
-            return Parser.Default.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
+            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
                     .MapResult(
                       (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                       (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
