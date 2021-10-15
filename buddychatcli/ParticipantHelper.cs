@@ -39,7 +39,7 @@ namespace BuddyChatCLI
                 {
                     // Read current line fields, pointer moves to the next line.
                     string[] fields = csvParser.ReadFields();
-                    Participant participant = createParticipantData(fields,1,2,4,6,7,9,11);
+                    Participant participant = createParticipantData(fields,1,2,4,6,7,9,11, "");
                     totalparticipantData.Add(participant);
                 }
             }
@@ -63,6 +63,9 @@ namespace BuddyChatCLI
 
                 csvParser.ReadLine(); // skipping the 1st line which is the column title
                 List<Participant> totalparticipantData = new List<Participant>();
+                // creating session_id from filename
+                int indexOfDotInString = filename.IndexOf(".");
+                string current_session = filename.Substring(0, indexOfDotInString);
                 while (!csvParser.EndOfData)
                 {
                     // Read current line fields, pointer moves to the next line.
@@ -78,6 +81,10 @@ namespace BuddyChatCLI
                         {
                             if ((!string.IsNullOrEmpty(fields[5])) && (STRING_YES_REUSE.Equals(fields[5])))
                             {
+                                Participant p = existingParticipants.Find(item => item.email == email);
+                                List<string> session_ids = p.session_participated;
+                                session_ids.Add(current_session);
+
                                 continue; // The same participant has signed up again with the same answers
                             }
                             else if ((!string.IsNullOrEmpty(fields[5])) && (STRING_NO_NEW_ANSWERS.Equals(fields[5])))
@@ -89,9 +96,9 @@ namespace BuddyChatCLI
                         }
                         
                     }
-
+                    
                     // Create a new entry
-                    Participant participant = createParticipantData(fields, 2, 3, 6, 8, 9, 11, 13);
+                    Participant participant = createParticipantData(fields, 2, 3, 6, 8, 9, 11, 13, current_session);
                     existingParticipants.Add(participant);
                 }
             }
@@ -109,7 +116,7 @@ namespace BuddyChatCLI
         /// <param name="question1FieldNum">The index position of question1 field value in the fields array if present </param>
         /// <param name="question2FieldNum">The index position of question2 field value in the fields array if present </param>
         /// <param name="question3FieldNum">The index position of question3 field value in the fields array if present </param>
-        private Participant createParticipantData(String[] fields, int emailFieldNum, int nameFieldNum, int pronounsFieldNum, int introFieldNum, int question1FieldNum, int question2FieldNum, int question3FieldNum)
+        private Participant createParticipantData(String[] fields, int emailFieldNum, int nameFieldNum, int pronounsFieldNum, int introFieldNum, int question1FieldNum, int question2FieldNum, int question3FieldNum, string session_id)
         {
             string email = fields[emailFieldNum];
             string name = fields[nameFieldNum];
@@ -153,8 +160,14 @@ namespace BuddyChatCLI
                 participantDataDict.Add(KEY_ANSWER3, answer3);
             }
 
-            // Creating Person object
-            Participant participant = new Participant {
+            List<string> session_ids = new List<string>();
+            if (!string.IsNullOrEmpty(session_id))
+            {
+                session_ids.Add(session_id);
+            }
+                // Creating Person object
+                Participant participant = new Participant {
+                session_participated = session_ids,
                 email = email,
                 name = name,
                 data = participantDataDict

@@ -44,7 +44,8 @@ namespace BuddyChatCLI
         public int Execute()
         {
             helper = new ParticipantHelper();
-            participantList = helper.createParticipantDataFromExistingCSVFile(Defaults.SignUpFileName);
+            string filePathForExistingCSVFile = ExistingListPath + "\\" + Defaults.SignUpFileName;
+            participantList = helper.createParticipantDataFromExistingCSVFile(filePathForExistingCSVFile);
             participantList = helper.createParticipantDataFromNewSessionCSVFileAndMergeWithExisting(NEW_SESSION, participantList);
             
             string strFilePath = newSignupListPath+"\\AllParticipantData.csv";
@@ -74,10 +75,14 @@ namespace BuddyChatCLI
             {
                 File.Delete(strFilePath);
             }
+            if (File.Exists(strFilePathJson))
+            {
+                File.Delete(strFilePathJson);
+            }
             File.WriteAllText(strFilePath, sbOutput.ToString());
             string json = JsonSerializer.Serialize(participantList);
             File.WriteAllText(strFilePathJson, json);
-            Console.WriteLine("Participant data successfully written to " + strFilePath);
+            Console.WriteLine("Participant data successfully written to " + strFilePath + " and " + strFilePathJson);
             return 0;
         }
     }
