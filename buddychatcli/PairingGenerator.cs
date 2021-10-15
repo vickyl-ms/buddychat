@@ -1,3 +1,4 @@
+using CommandLine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,31 +24,32 @@ namespace BuddyChatCLI
     /// Generates random pairs of participants, making sure that each pair has never
     /// been paired before.
     /// </summary>
+    [Verb("CreatePairings", HelpText = "Creates the random assignments.")]
     public class PairingGenerator
     {
         private Random rng = new Random();  
 
-        private string sessionId;
+        [Option(shortName: 's',
+                longName: "sessionId",
+                Required = true,
+                HelpText = "The id for this specific session.")]
+        public string SessionId { get; set; }
 
-        private string pathToHistoricalData;
+        [Option(shortName: 'p',
+                longName: "pathToHistoricalData",
+                Required = false,
+                HelpText = "The location of participant and history json. Default is current directory.")]
+        public string PathToHistoricalData { get; set; } = Directory.GetCurrentDirectory();
 
-        private string outputPath;
+        [Option(shortName: 'o',
+                longName: "outputPath",
+                Required = false,
+                HelpText = "Output location. Default is current directory.")]
+        public string OutputPath { get; set; } = Directory.GetCurrentDirectory();
 
-        // Takes in commandline options and returns a success int code
-        public static ReturnCode ExecutePairingGenerator(CommandLineOptions options)
+        public int Execute()
         {
-            return ReturnCode.ErrorCommandFailed;
-        }
-
-        // Inputs
-        // - location of participant and history json - default to current dir or current dir + session id
-        // - session id
-        // - output location - default to session id + number of tries
-        public PairingGenerator(string sessionId = "", string pathToHistoricalData = "", string outputPath = "")
-        {
-            this.sessionId = sessionId;
-            this.pathToHistoricalData = pathToHistoricalData;
-            this.outputPath = outputPath;
+            return 0;
         }
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace BuddyChatCLI
             ValidateOptions();
             IEnumerable<Participant> participants = ReadInParticipantFile();
             Dictionary<string, PairingHistory> pairingHistories = ReadInPairingHistoryFile();
-            IEnumerable<PairingEntry> pairings = Generate(sessionId, participants, pairingHistories);
+            IEnumerable<PairingEntry> pairings = Generate(this.SessionId, participants, pairingHistories);
             WritePairingsToFile(pairings);
             return ReturnCode.Success;
         }
@@ -70,92 +72,45 @@ namespace BuddyChatCLI
         private void WritePairingsToFile(IEnumerable<PairingEntry> pairings)
         {
             File.WriteAllText(
-                Path.Combine(this.outputPath, Defaults.NewPairingFileName),
+                Path.Combine(this.OutputPath, Defaults.NewPairingFileName),
                 JsonConvert.SerializeObject(pairings));
         }
 
         private Dictionary<string, PairingHistory> ReadInPairingHistoryFile()
         {
-            string json = File.ReadAllText(Path.Combine(this.pathToHistoricalData, Defaults.PairingHistoryFileName));
+            string json = File.ReadAllText(Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName));
             return JsonConvert.DeserializeObject<Dictionary<string, PairingHistory>>(json);
         }
 
         private IEnumerable<Participant> ReadInParticipantFile()
         {
-            string json = File.ReadAllText(Path.Combine(this.pathToHistoricalData, Defaults.ParticipantsFileName));
+            string json = File.ReadAllText(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName));
             return JsonConvert.DeserializeObject<List<Participant>>(json);
         }
 
         private void ValidateOptions()
         {
-            if (String.IsNullOrWhiteSpace(this.sessionId))
+            if (String.IsNullOrWhiteSpace(this.SessionId))
             {
                 throw new ArgumentException("Session id is required!");
             }
 
-            if (String.IsNullOrWhiteSpace(this.pathToHistoricalData))
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName)))
             {
-                string defaultPath1 = Directory.GetCurrentDirectory();
-                string defaultPath2 = Path.Combine(defaultPath1, sessionId);
-                
-                if (File.Exists(Path.Combine(defaultPath1, Defaults.ParticipantsFileName)))
-                {
-                    Console.WriteLine($"No historical data path passed in. '{Defaults.ParticipantsFileName}' found at '{defaultPath1}'");
-                    this.pathToHistoricalData = defaultPath1;
-                }
-
-                if (File.Exists(Path.Combine(defaultPath2, Defaults.ParticipantsFileName)))
-                {
-                    Console.WriteLine($"No historical data path passed in. '{Defaults.ParticipantsFileName}' found at '{defaultPath2}'");
-                    this.pathToHistoricalData = defaultPath2;
-                }
-
-                if (String.IsNullOrWhiteSpace(this.pathToHistoricalData))
-                {
-                    string errMsg = $"No historical data path passed in and " +
-                        $"{Defaults.ParticipantsFileName} could not be found at the 2 default locations: " +
-                        $"{defaultPath1} and {defaultPath2}";
-                    throw new ArgumentException(errMsg) ;
-                }
-
-                if (!File.Exists(Path.Combine(this.pathToHistoricalData, Defaults.PairingHistoryFileName)))
-                {
-                    string errMsg = $"No historical data path passed in and " +
-                        $"{Defaults.PairingHistoryFileName} could not be found at location with " +
-                        $"{Defaults.ParticipantsFileName} in {this.pathToHistoricalData}.";
-                    throw new ArgumentException(errMsg);
-                }
-                else
-                {
-                    Console.WriteLine($"No historical data path passed in. '{Defaults.PairingHistoryFileName}' found at '{this.pathToHistoricalData}'");
-                }
-            }
-            else
-            {
-                if (!File.Exists(Path.Combine(this.pathToHistoricalData, Defaults.ParticipantsFileName)))
-                {
-                    string errMsg = $"{Defaults.ParticipantsFileName} could not be found in {this.pathToHistoricalData}.";
-                    throw new ArgumentException(errMsg);
-                }
-
-                if (!File.Exists(Path.Combine(this.pathToHistoricalData, Defaults.PairingHistoryFileName)))
-                {
-                    string errMsg = $"{Defaults.PairingHistoryFileName} could not be found in {this.pathToHistoricalData}.";
-                    throw new ArgumentException(errMsg);
-                }
+                string errMsg = $"{Defaults.ParticipantsFileName} could not be found in {this.PathToHistoricalData}.";
+                throw new ArgumentException(errMsg);
             }
 
-            if (string.IsNullOrWhiteSpace(this.outputPath))
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName)))
             {
-                this.outputPath = Directory.GetCurrentDirectory();
+                string errMsg = $"{Defaults.PairingHistoryFileName} could not be found in {this.PathToHistoricalData}.";
+                throw new ArgumentException(errMsg);
             }
-            else
+
+            if (!Directory.Exists(this.OutputPath))
             {
-                if (!Directory.Exists(this.outputPath))
-                {
-                    Console.WriteLine($"Output directory '{this.outputPath}' does not exist. Creating directory.");
-                    Directory.CreateDirectory(this.outputPath);
-                }
+                Console.WriteLine($"Output directory '{this.OutputPath}' does not exist. Creating directory.");
+                Directory.CreateDirectory(this.OutputPath);
             }
         }
 
