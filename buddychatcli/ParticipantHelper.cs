@@ -116,27 +116,28 @@ namespace BuddyChatCLI
 
             Dictionary<string, string> participantDataDict = new Dictionary<string, string>();
 
-            if (!string.IsNullOrEmpty(fields[pronounsFieldNum])) //4
+            if (!string.IsNullOrEmpty(fields[pronounsFieldNum])) // pronoun 
             {
-                string pronouns = fields[pronounsFieldNum]; //4
-                participantDataDict.Add(KEY_PRONOUNS, pronouns);
+                string pronouns = fields[pronounsFieldNum];
+                string replacePronouns = pronouns.Replace(',', ' ');
+                participantDataDict.Add(KEY_PRONOUNS, replacePronouns);
             }
 
-            if (!string.IsNullOrEmpty(fields[introFieldNum])) //6
+            if (!string.IsNullOrEmpty(fields[introFieldNum])) // intro
             {
                 string intro = fields[introFieldNum];
                 participantDataDict.Add(KEY_INTRO, intro);
             }
 
-            if (!string.IsNullOrEmpty(fields[question1FieldNum])) //7
+            if (!string.IsNullOrEmpty(fields[question1FieldNum])) //questions1
             {
-                string question1 = fields[question1FieldNum]; //7
-                string answer1 = fields[question1FieldNum + 1]; //8
+                string question1 = fields[question1FieldNum]; 
+                string answer1 = fields[question1FieldNum + 1];
                 participantDataDict.Add(KEY_QUESTION1, question1);
                 participantDataDict.Add(KEY_ANSWER1, answer1);
             }
 
-            if (!string.IsNullOrEmpty(fields[question2FieldNum]))
+            if (!string.IsNullOrEmpty(fields[question2FieldNum])) // question2
             {
                 string question2 = fields[question2FieldNum];
                 string answer2 = fields[question2FieldNum + 1];
@@ -144,7 +145,7 @@ namespace BuddyChatCLI
                 participantDataDict.Add(KEY_ANSWER2, answer2);
             }
 
-            if (!string.IsNullOrEmpty(fields[question3FieldNum]))
+            if (!string.IsNullOrEmpty(fields[question3FieldNum])) // question3
             {
                 string question3 = fields[question3FieldNum];
                 string answer3 = fields[question3FieldNum + 1];
@@ -160,6 +161,8 @@ namespace BuddyChatCLI
             };
             return participant;
         }
+
+
     }  
 }
 
