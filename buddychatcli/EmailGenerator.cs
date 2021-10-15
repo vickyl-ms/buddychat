@@ -80,6 +80,8 @@ namespace BuddyChatCLI
             email.Recipients.AddTo(participant1.email);
             email.Recipients.AddTo(participant2.email);
             email.IconIndex = MessageIconIndex.UnreadMail;
+            email.ReplyToRecipients.AddTo(participant1.email);
+            email.ReplyToRecipients.AddTo(participant2.email);
 
             // The MsgKit library doesn't officially support creating Outlook templates (*.oft), it only supports *.msg files.
             // *.msg files can't be sent directly from Outlook so we would have to forward the message if we used this file type.
