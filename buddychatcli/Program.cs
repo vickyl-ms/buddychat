@@ -22,12 +22,16 @@ namespace BuddyChatCLI
         CreateEmails
     }
 
-    public class Program
+    public static class Defaults
     {
         public static readonly string SignUpFileName = "signup.csv";
         public static readonly string ParticipantsFileName = "participants.json";
         public static readonly string PairingHistoryFileName = "pairing_history.json";
+        public static readonly string NewPairingFileName = "random_pairings.json";
+    }
 
+    public class Program
+    {
         private static ReturnCode returnCode = 0;
 
         public static int Main(string[] args)
