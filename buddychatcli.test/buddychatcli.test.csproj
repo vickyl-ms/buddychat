@@ -24,4 +24,10 @@
     <ProjectReference Include="..\buddychatcli\buddychatcli.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\Pairings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
