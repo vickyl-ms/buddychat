@@ -10,13 +10,13 @@ namespace BuddyChatCLI
     {
         [Option(shortName: 'e',
                 longName: "existingDataFilePath",
-                Required = true,
+                Required = false,
                 HelpText = "Path of the existing csv file which already has the participant data")]
         public string ExistingListPath { get; set; } = Directory.GetCurrentDirectory();
 
         [Option(shortName: 'n',
                 longName: "newSessionFilePath",
-                Required = true,
+                Required = false,
                 HelpText = "Path of the new signups csv file ")]
         public string newSessionFilePath { get; set; } = Directory.GetCurrentDirectory();
 
