@@ -27,7 +27,6 @@ namespace BuddyChatCLI
                     .MapResult(
                       (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                       (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
-                      (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
                       errs => (int)ReturnCode.ErrorParsingCommandLine);
         }
     }
