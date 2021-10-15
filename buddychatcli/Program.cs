@@ -1,6 +1,4 @@
-﻿using System;
-using CommandLine;
-using System.Collections.Generic;
+﻿using CommandLine;
 
 namespace BuddyChatCLI
 {
@@ -12,18 +10,22 @@ namespace BuddyChatCLI
         ErrorCommandFailed = -3
     }
 
-    public class Program
+    public static class Defaults
     {
         public static readonly string SignUpFileName = "signup.csv";
-        public static readonly string ParticipantsFileName = "participants.json";
-        public static readonly string PairingHistoryFileName = "pairing_history.json";
+        public static readonly string ParticipantsFileName = "Participants.json";
+        public static readonly string PairingHistoryFileName = "PairingHistory.json";
+        public static readonly string NewPairingFileName = "RandomPairings.json";
+    }
 
+    public class Program
+    {
         public static int Main(string[] args)
         {
             // Create a case insensitive parser
             var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
 
-            return Parser.Default.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
+            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
                     .MapResult(
                       (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                       (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),

@@ -5,17 +5,13 @@ namespace BuddyChatCLI
 {
     public class Participant : IEquatable<Participant>
     {
-        // uniquely identify a participant
-        public int participant_id { get; set; }
-        
         // list of all the sessions the participant had participated
         public List<string> session_participated { get; set; }
         
         // participant full name
         public string name { get; set; }
-
         public string first_name => name.Split(' ')[0];
-        
+
         // participant email
         public string email { get; set; }
         
@@ -32,7 +28,6 @@ namespace BuddyChatCLI
         {
             foreach (KeyValuePair<string, string> kvp in data)
             {
-
                 Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
             }
         }

@@ -3,15 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
+[assembly: InternalsVisibleTo("BuddyChatCLI.test")]
 namespace BuddyChatCLI
 {
+    /// <summary>
+    /// Pairing Generator returns a list of Pairing Entries
+    /// </summary>
     public class PairingEntry
     {
         public Participant participant1;
         public Participant participant2;
     }
 
+    /// <summary>
+    /// Generates random pairs of participants, making sure that each pair has never
+    /// been paired before.
+    /// </summary>
     [Verb("CreatePairings", HelpText = "Creates the random assignments.")]
     public class PairingGenerator
     {
@@ -35,39 +47,132 @@ namespace BuddyChatCLI
                 HelpText = "Output location. Default is current directory.")]
         public string OutputPath { get; set; } = Directory.GetCurrentDirectory();
 
+        /// <summary>
+        /// Validate and generate default options. Read in historical data.
+        /// </summary>
+        /// <returns>List of Pairing entries</returns>
         public int Execute()
         {
-            return 0;
+            ValidateOptions();
+            IEnumerable<Participant> participants = ReadInParticipantFile();
+            Dictionary<string, PairingHistory> pairingHistories = ReadInPairingHistoryFile();
+            IEnumerable<PairingEntry> pairings = Generate(this.SessionId, participants, pairingHistories);
+            WritePairingsToFile(pairings);
+            return Convert.ToInt32(ReturnCode.Success);
         }
 
-        // Validate & generate default path values
-        // read in data
-        public IEnumerable<PairingEntry> Generate()
+        /// <summary>
+        /// Write out list of Pairing Entries to file
+        /// </summary>
+        private void WritePairingsToFile(IEnumerable<PairingEntry> pairings)
         {
-            return null;
+            string outputFile = Path.Combine(this.OutputPath, Defaults.NewPairingFileName);
+            Console.WriteLine($"Writing output to {outputFile}.");
+            File.WriteAllText(
+                outputFile,
+                JsonConvert.SerializeObject(pairings, Formatting.Indented));
         }
 
-        // Generate pairs:
-        // Inputs are:
-        //  - Participant data json
-        //  - Pairing history json
-        //  - Session Id
+        private Dictionary<string, PairingHistory> ReadInPairingHistoryFile()
+        {
+            string json = File.ReadAllText(Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName));
+            return JsonConvert.DeserializeObject<Dictionary<string, PairingHistory>>(json);
+        }
+
+        private IEnumerable<Participant> ReadInParticipantFile()
+        {
+            string json = File.ReadAllText(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName));
+            return JsonConvert.DeserializeObject<List<Participant>>(json);
+        }
+
+        private void ValidateOptions()
+        {
+            if (String.IsNullOrWhiteSpace(this.SessionId))
+            {
+                throw new ArgumentException("Session id is required!");
+            }
+
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName)))
+            {
+                string errMsg = $"{Defaults.ParticipantsFileName} could not be found in {this.PathToHistoricalData}.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName)))
+            {
+                string errMsg = $"{Defaults.PairingHistoryFileName} could not be found in {this.PathToHistoricalData}.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!Directory.Exists(this.OutputPath))
+            {
+                Console.WriteLine($"Output directory '{this.OutputPath}' does not exist. Creating directory.");
+                Directory.CreateDirectory(this.OutputPath);
+            }
+        }
+
+        /// <summary>
+        /// Generate list of Pairing Entries for the set of participants that are
+        /// in the specified session. Use the pairingHistories to make sure no one
+        /// is paired with the same person twice.
+        /// </summary>
+        /// <param name="sessionId">Session Id used to identify participants to pair</param>
+        /// <param name="participants">List of all participants</param>
+        /// <param name="pairingHistories">List of pairing history entries that say who all a participant was paired with in the past </param>
+        /// <returns></returns>
         public IEnumerable<PairingEntry> Generate(
             string sessionId, 
             IEnumerable<Participant> participants, 
             Dictionary<string, PairingHistory> pairingHistories)
         {
             IEnumerable<Participant> sessionParticipants = FindAllParticipantsInSession(sessionId, participants);
-            
+            ValidateEvenNumberParticipants(sessionParticipants);
+            Console.WriteLine($"{sessionParticipants.Count()} participants found for session '{sessionId}'.");
+
+            // Generate pairings until there is one without collisions
             IEnumerable<PairingEntry> candidatePairing;
 
             do {
                 candidatePairing = GenerateRandomPairings(sessionParticipants);
-            } while (ValidatePairing(candidatePairing, pairingHistories));
-            
+            } while (!ValidatePairing(candidatePairing, pairingHistories));
+
+            Console.WriteLine($"Pairing results:");
+            int i = 0;
+            foreach (PairingEntry pair in candidatePairing)
+            {
+                Console.WriteLine($"\t{++i}: '{pair.participant1.email}' and '{pair.participant2.email}'");
+            }
+
             return candidatePairing;
         }
 
+        /// <summary>
+        /// Check that participant # is even. Throw exception otherwise
+        /// </summary>
+        /// <param name="sessionParticipants">list of participants to pair</param>
+        private void ValidateEvenNumberParticipants(IEnumerable<Participant> sessionParticipants)
+        {
+            if (sessionParticipants.Count() % 2 != 0)
+            {
+                StringBuilder exceptionMsg = new StringBuilder();
+                int i = 0;
+                exceptionMsg.AppendLine("Odd numbers of participants can't be paired!");
+                exceptionMsg.AppendLine("Participants: ");
+                foreach (Participant participant in sessionParticipants)
+                {
+                    exceptionMsg.AppendLine($"{i}: {participant.email}");
+                }
+
+                throw new Exception(exceptionMsg.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Validate that pairs have never been paired up before using the pairing histories for reference
+        /// </summary>
+        /// <param name="candidatePairing">List of Pairing Entries</param>
+        /// <param name="pairingHistory">List of PairingHistory entries</param>
+        /// <returns></returns>
         public bool ValidatePairing(
             IEnumerable<PairingEntry> candidatePairing, 
             Dictionary<string, PairingHistory> pairingHistory)
@@ -87,13 +192,32 @@ namespace BuddyChatCLI
                         }
                     }
                 }
+
+                // This technically should not be possible if the data is correct but adding just in case.
+                if (pairingHistory.TryGetValue(pair.participant2.email, out history))
+                {
+                    foreach (var historyEntry in history.history)
+                    {
+                        if (historyEntry.buddy_email.Equals(pair.participant1.email, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Pairing conflict found
+                            return false;
+                        }
+                    }
+                }
             }
             
             // No pairing conflict found!
             return true;
         }
 
-        // function on the internet for shuffling a list in place
+        /// <summary>
+        /// Shuffles a IList<T> inplace
+        /// </summary>
+        /// <param name="list">List to shuffle</param>
+        /// <param name="rng">Random number generator</param>
+        /// <typeparam name="T">Type of list</typeparam>
+        /// <returns>IEnumerable of the shuffled list</returns>
         public static IEnumerable<T> ShuffleList<T>(IList<T> list, Random rng) 
         {  
             int n = list.Count;  
@@ -108,11 +232,23 @@ namespace BuddyChatCLI
             return list;
         }
 
-        private IEnumerable<PairingEntry> GenerateRandomPairings(
+        /// <summary>
+        /// Generate random paris of partipants
+        /// </summary>
+        /// <param name="sessionParticipants"></param>
+        /// <returns>List of Pairing Entries</returns>
+        public IEnumerable<PairingEntry> GenerateRandomPairings(
             IEnumerable<Participant> sessionParticipants)
         {
             // Assign rand value to each session participant
             List<Participant> participants = sessionParticipants.ToList<Participant>();
+            
+            // Error if participants list is not even
+            if (participants.Count() % 2 != 0)
+            {
+                throw new Exception("Cannot generate pairing for an odd number of participants");
+            }
+
             participants = ShuffleList<Participant>(participants, this.rng).ToList();
             
             List<PairingEntry> pairings = new List<PairingEntry>();
@@ -127,11 +263,19 @@ namespace BuddyChatCLI
             return pairings;
         }
 
+        /// <summary>
+        /// Filter down partipant list to just those who are part of the specified session
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="participants"></param>
+        /// <returns></returns>
         public IEnumerable<Participant> FindAllParticipantsInSession(
             string sessionId, 
             IEnumerable<Participant> participants)
         {
-            return participants.Where(p => p.session_participated.Contains(sessionId));
+            return participants.Where(
+                p => p.session_participated.Any(
+                    s => s.Equals(sessionId, StringComparison.InvariantCultureIgnoreCase)));
         }
     }
 }

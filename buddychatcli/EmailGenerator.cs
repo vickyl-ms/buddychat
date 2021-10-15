@@ -1,5 +1,4 @@
-﻿using BuddyChatCLI;
-using CommandLine;
+﻿using CommandLine;
 using MsgKit;
 using MsgKit.Enums;
 using Newtonsoft.Json;
