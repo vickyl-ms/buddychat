@@ -73,7 +73,7 @@ namespace BuddyChatCLI
         {
             File.WriteAllText(
                 Path.Combine(this.OutputPath, Defaults.NewPairingFileName),
-                JsonConvert.SerializeObject(pairings));
+                JsonConvert.SerializeObject(pairings, Formatting.Indented));
         }
 
         private Dictionary<string, PairingHistory> ReadInPairingHistoryFile()
@@ -268,7 +268,9 @@ namespace BuddyChatCLI
             string sessionId, 
             IEnumerable<Participant> participants)
         {
-            return participants.Where(p => p.session_participated.Contains(sessionId));
+            return participants.Where(
+                p => p.session_participated.Any(
+                    s => s.Equals(sessionId, StringComparison.InvariantCultureIgnoreCase)));
         }
     }
 }

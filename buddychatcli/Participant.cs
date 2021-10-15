@@ -10,6 +10,7 @@ namespace BuddyChatCLI
         
         // participant full name
         public string name { get; set; }
+        public string first_name => name.Split(' ')[0];
 
         // participant email
         public string email { get; set; }

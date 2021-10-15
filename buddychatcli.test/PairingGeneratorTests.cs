@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace BuddyChatCLI.test
@@ -34,7 +36,7 @@ namespace BuddyChatCLI.test
             // current session participant
             Participant participant3 = new Participant {
                 email = "participant3@email.com",
-                session_participated = new List<string>{"current"},
+                session_participated = new List<string>{"curRent"},
                 data = new Dictionary<string, string>() {
                     { "intro", "Hi my name is participant 3"}
                 }
@@ -43,7 +45,7 @@ namespace BuddyChatCLI.test
             // current and old session participant
             Participant participant4 = new Participant {
                 email = "participant4@email.com",
-                session_participated = new List<string>{"old", "older", "oldest", "current"},
+                session_participated = new List<string>{"old", "older", "oldesT", "current"},
                 data = new Dictionary<string, string>() {
                     { "intro", "Hi my name is participant 4"}
                 }
@@ -52,7 +54,7 @@ namespace BuddyChatCLI.test
             // another current session participant
             Participant participant5 = new Participant {
                 email = "participant5@email.com",
-                session_participated = new List<string>{"old", "current", "oldest"},
+                session_participated = new List<string>{"old", "current", "Oldest"},
                 data = new Dictionary<string, string>() {
                     { "intro", "Hi my name is participant 5"}
                 }
@@ -61,7 +63,7 @@ namespace BuddyChatCLI.test
             // another current session participant
             Participant participant6 = new Participant {
                 email = "participant6@email.com",
-                session_participated = new List<string>{"current", "older", "oldest"},
+                session_participated = new List<string>{"Current", "older", "oldest"},
                 data = new Dictionary<string, string>() {
                     { "intro", "Hi my name is participant 6"}
                 }
@@ -245,6 +247,46 @@ namespace BuddyChatCLI.test
         {
             PairingGenerator generator = new PairingGenerator();
             Assert.Throws<Exception>(() => generator.Generate(sessionId: "old", testParticipants, testPairingHistory));
+        }
+
+        [Fact]
+        public void Generate_ReadFromFiles()
+        {
+            string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData");
+            PairingGenerator generator = new PairingGenerator {
+                PathToHistoricalData = testDataPath,
+                SessionId = "Current"
+            };
+            
+            generator.Generate();
+
+            string expectedOutputFile = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
+            Assert.True(File.Exists(expectedOutputFile));
+            
+            string actualPairingsContent = File.ReadAllText(expectedOutputFile);
+            IEnumerable<PairingEntry> pairings = JsonConvert.DeserializeObject<IEnumerable<PairingEntry>>(actualPairingsContent);
+
+            foreach (PairingEntry pair in pairings)
+            {
+                if (pair.participant1.email == "participant1@email.com")
+                {
+                    Assert.Equal("participant5@email.com", pair.participant2.email);
+                }
+                else if (pair.participant1.email == "participant5@email.com")
+                {
+                    Assert.Equal("participant1@email.com", pair.participant2.email);
+                } 
+                else if (pair.participant1.email == "participant2@email.com")
+                {
+                    Assert.Equal("participant4@email.com", pair.participant2.email);
+                } else {
+                    Assert.Equal("participant4@email.com", pair.participant1.email);
+                    Assert.Equal("participant2@email.com", pair.participant2.email);
+                }
+            }
+
+            // Cleanup test file
+            File.Delete(expectedOutputFile);
         }
     }
 }

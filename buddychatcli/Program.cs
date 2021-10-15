@@ -13,9 +13,9 @@ namespace BuddyChatCLI
     public static class Defaults
     {
         public static readonly string SignUpFileName = "signup.csv";
-        public static readonly string ParticipantsFileName = "participants.json";
-        public static readonly string PairingHistoryFileName = "pairing_history.json";
-        public static readonly string NewPairingFileName = "random_pairings.json";
+        public static readonly string ParticipantsFileName = "Participants.json";
+        public static readonly string PairingHistoryFileName = "PairingHistory.json";
+        public static readonly string NewPairingFileName = "RandomPairings.json";
     }
 
     public class Program

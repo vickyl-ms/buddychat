@@ -1,0 +1,55 @@
+[
+  {
+    "name": "FirstName1 MiddleName1 LastName1",
+    "email": "participant1@email.com",
+    "session_participated": [
+        "old",
+        "current"
+    ],
+    "data": {
+      "introduction": "Hi! I'm participant 1."
+    }
+  },
+  {
+    "name": "FirstName2 LastName2",
+    "email": "participant2@email.com",
+    "session_participated": [
+        "current"
+    ],
+    "data": {
+      "introduction": "Hi! I'm participant 2."
+    }
+  },
+  {
+    "name": "FirstName3 LastName3",
+    "email": "participant3@email.com",
+    "session_participated": [
+        "old"
+    ],
+    "data": {
+      "introduction": "Hi! I'm participant 3."
+    }
+  },
+  {
+    "name": "FirstName4 LastName4",
+    "email": "participant4@email.com",
+    "session_participated": [
+        "old",
+        "curRent"
+    ],
+    "data": {
+      "introduction": "Hi! I'm participant 4."
+    }
+  },
+  {
+    "name": "FirstName5 LastName5",
+    "email": "participant5@email.com",
+    "session_participated": [
+        "old",
+        "current"
+    ],
+    "data": {
+      "introduction": "Hi! I'm participant 5."
+    }
+  }
+]
