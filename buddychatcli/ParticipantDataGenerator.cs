@@ -5,54 +5,50 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-
-
 
 [assembly: InternalsVisibleTo("BuddyChatCLI.test")]
 namespace BuddyChatCLI
 {
-
-    [Verb("CreateParticipantData", HelpText = "Creates Participant Data combining the existing data so far with the new signup data from the csv files into a new csv file")]
-    public class ParticipantDataGenerator
+    [Verb("Update", HelpText = "Updates participant data by combining historical data with new signup data")]
+    public class ParticipantUpdater
     {
-
-        public static readonly string NEW_SESSION = "new_session.csv";
-
-        ParticipantHelper helper;
-
-        List<Participant> participantList;
-
-        [Option(shortName: 'e',
-                longName: "existingDataFilePath",
+        [Option(shortName: 'p',
+                longName: "PathToHistoricalData",
                 Required = false,
-                HelpText = "Path of the existing csv file which already has the participant data")]
-        public string ExistingListPath { get; set; } = Directory.GetCurrentDirectory();
+                HelpText = "Path to json file with historical participant data (participants.json) and " +
+                    "historical pairing data (pairinghistory.json). Defaults to current directory.")]
+        public string PathToHistoricalData { get; set; } = Directory.GetCurrentDirectory();
 
         [Option(shortName: 'n',
-                longName: "newSessionFilePath",
+                longName: "NewSignupsFile",
                 Required = false,
-                HelpText = "Path of the new signups csv file ")]
-        public string newSessionFilePath { get; set; } = Directory.GetCurrentDirectory();
+                HelpText = "Filename of csv with new signups data csv file. Defaults signup.csv in current directory")]
+        public string NewSignupFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.SignUpFileName);
 
-        [Option(shortName: 'f',
-                longName: "fullParticipantDataFilePath",
+        [Option(shortName: 's',
+                longName: "SessionId",
+                Required = true,
+                HelpText = "The id for the new session.")]
+        public string SessionId { get; set; }
+
+        [Option(shortName: 'o',
+                longName: "OutputPath",
                 Required = false,
-                HelpText = "Path of the new csv file generated which has entire participant data ")]
-        public string newSignupListPath { get; set; } = Directory.GetCurrentDirectory();
+                HelpText = "Path to put the updated participant data and pairing history data. Defaults to <current directory>\\<session id>")]
+        public string OutputPath { get; set; }
 
         public int Execute()
         {
-            helper = new ParticipantHelper();
-            participantList = helper.createParticipantDataFromExistingCSVFile(Defaults.SignUpFileName);
-            participantList = helper.createParticipantDataFromNewSessionCSVFileAndMergeWithExisting(NEW_SESSION, participantList);
+            List<Participant> historicalParticipants = ParticipantHelper.ReadInHistoricalParticipantData(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName));
+            List<Participant> updatedParticipants = ParticipantHelper.MergeNewSignupWithHistoricalData(NewSignupFile, historicalParticipants);
+
+            string strFilePath = OutputPath+"\\AllParticipantData.csv";
+            string strFilePathJson = OutputPath + "\\ParticipantData.json";
             
-            string strFilePath = newSignupListPath+"\\AllParticipantData.csv";
-            string strFilePathJson = newSignupListPath + "\\ParticipantData.json";
             string strSeperator = ",";
             StringBuilder sbOutput = new StringBuilder();
             sbOutput.AppendLine("name,email,pronouns,intro,first question,first answer,second question,second answer,third question,third answer");
-            foreach (var participant in participantList)
+            foreach (var participant in historicalParticipants)
             {
                 StringBuilder sbInnerOutput = new StringBuilder();
                 sbInnerOutput.Append(participant.name);
@@ -75,7 +71,7 @@ namespace BuddyChatCLI
                 File.Delete(strFilePath);
             }
             File.WriteAllText(strFilePath, sbOutput.ToString());
-            string json = JsonSerializer.Serialize(participantList);
+            string json = JsonSerializer.Serialize(historicalParticipants);
             File.WriteAllText(strFilePathJson, json);
             Console.WriteLine("Participant data successfully written to " + strFilePath);
             return 0;

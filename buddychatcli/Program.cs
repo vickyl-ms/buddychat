@@ -22,15 +22,12 @@ namespace BuddyChatCLI
     {
         public static int Main(string[] args)
         {
-            // Create a case insensitive parser
-            var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
-
-            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
+            return Parser.Default.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater>(args)
                     .MapResult(
-                      (EmailGenerator emailGenerator) => emailGenerator.Execute(),
-                      (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
-                      (ParticipantDataGenerator participantDataGenerator) => participantDataGenerator.Execute(),
-                      errs => (int)ReturnCode.ErrorParsingCommandLine);
+                        (EmailGenerator emailGenerator) => emailGenerator.Execute(),
+                        (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
+                        (ParticipantUpdater participantUpdater) => participantUpdater.Execute(),
+                        errors => (int)ReturnCode.ErrorParsingCommandLine);
         }
     }
 }

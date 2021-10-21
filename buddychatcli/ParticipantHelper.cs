@@ -4,7 +4,7 @@ using System;
 
 namespace BuddyChatCLI
 {
-    public class ParticipantHelper
+    public static class ParticipantHelper
     {
         public static readonly string KEY_INTRO = "intro";
         public static readonly string KEY_PRONOUNS = "pronouns";
@@ -24,7 +24,7 @@ namespace BuddyChatCLI
         /// Reads from .csv file and creates a list of participants
         /// </summary>
         /// <param name="filename">The name of the file to be parsed </param>
-        public List<Participant> createParticipantDataFromExistingCSVFile(string filename) 
+        public static List<Participant> ReadInHistoricalParticipantData(string filename) 
         {
             List<Participant> totalparticipantData = new List<Participant>();
             using (TextFieldParser csvParser = new TextFieldParser(filename))
@@ -39,7 +39,7 @@ namespace BuddyChatCLI
                 {
                     // Read current line fields, pointer moves to the next line.
                     string[] fields = csvParser.ReadFields();
-                    Participant participant = createParticipantData(fields,1,2,4,6,7,9,11);
+                    Participant participant = CreateParticipantData(fields,1,2,4,6,7,9,11);
                     totalparticipantData.Add(participant);
                 }
             }
@@ -53,7 +53,7 @@ namespace BuddyChatCLI
         /// </summary>
         /// <param name="filename">The name of the file to be parsed </param>
         /// <param name="existingParticipants">The list of existing participants.</param>
-        public List<Participant> createParticipantDataFromNewSessionCSVFileAndMergeWithExisting(string filename, List<Participant> existingParticipants)
+        public static List<Participant> MergeNewSignupWithHistoricalData(string filename, List<Participant> existingParticipants)
         {
             using (TextFieldParser csvParser = new TextFieldParser(filename))
             {
@@ -91,7 +91,7 @@ namespace BuddyChatCLI
                     }
 
                     // Create a new entry
-                    Participant participant = createParticipantData(fields, 2, 3, 6, 8, 9, 11, 13);
+                    Participant participant = CreateParticipantData(fields, 2, 3, 6, 8, 9, 11, 13);
                     existingParticipants.Add(participant);
                 }
             }
@@ -109,7 +109,7 @@ namespace BuddyChatCLI
         /// <param name="question1FieldNum">The index position of question1 field value in the fields array if present </param>
         /// <param name="question2FieldNum">The index position of question2 field value in the fields array if present </param>
         /// <param name="question3FieldNum">The index position of question3 field value in the fields array if present </param>
-        private Participant createParticipantData(String[] fields, int emailFieldNum, int nameFieldNum, int pronounsFieldNum, int introFieldNum, int question1FieldNum, int question2FieldNum, int question3FieldNum)
+        private static Participant CreateParticipantData(String[] fields, int emailFieldNum, int nameFieldNum, int pronounsFieldNum, int introFieldNum, int question1FieldNum, int question2FieldNum, int question3FieldNum)
         {
             string email = fields[emailFieldNum];
             string name = fields[nameFieldNum];
