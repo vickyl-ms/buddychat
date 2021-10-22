@@ -30,7 +30,7 @@ namespace BuddyChatCLI
         private Random rng = new Random();  
 
         [Option(shortName: 's',
-                longName: "sessionId",
+                longName: "SessionId",
                 Required = true,
                 HelpText = "The id for this specific session.")]
         public string SessionId { get; set; }
