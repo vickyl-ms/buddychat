@@ -1,4 +1,7 @@
-﻿using CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using CommandLine;
+using CommandLine.Text;
 
 namespace BuddyChatCLI
 {
@@ -22,7 +25,15 @@ namespace BuddyChatCLI
     {
         public static int Main(string[] args)
         {
-            return Parser.Default.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater>(args)
+            // Create a case insensitive parser
+            var parser = new Parser(cfg => 
+                {
+                    cfg.CaseSensitive = false;
+                    cfg.IgnoreUnknownArguments = false;
+                    cfg.HelpWriter = Console.Error;
+                });
+
+            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater>(args)
                     .MapResult(
                         (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                         (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),

@@ -1,10 +1,9 @@
 ﻿using CommandLine;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
 
 [assembly: InternalsVisibleTo("BuddyChatCLI.test")]
 namespace BuddyChatCLI
@@ -41,40 +40,23 @@ namespace BuddyChatCLI
         {
             List<Participant> historicalParticipants = ParticipantHelper.ReadInHistoricalParticipantData(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName));
             List<Participant> updatedParticipants = ParticipantHelper.MergeNewSignupWithHistoricalData(NewSignupFile, historicalParticipants);
-
-            string strFilePath = OutputPath+"\\AllParticipantData.csv";
-            string strFilePathJson = OutputPath + "\\ParticipantData.json";
             
-            string strSeperator = ",";
-            StringBuilder sbOutput = new StringBuilder();
-            sbOutput.AppendLine("name,email,pronouns,intro,first question,first answer,second question,second answer,third question,third answer");
-            foreach (var participant in historicalParticipants)
-            {
-                StringBuilder sbInnerOutput = new StringBuilder();
-                sbInnerOutput.Append(participant.name);
-                sbInnerOutput.Append(strSeperator);
+            string OutputPathJson = Path.Combine(OutputPath, Defaults.ParticipantsFileName);
+            WriteOutUpdatedParticipantsFile(OutputPathJson, updatedParticipants);
 
-                sbInnerOutput.Append(participant.email);
-                sbInnerOutput.Append(strSeperator);
+            return (int)ReturnCode.Success;
+        }
 
-                // Looping the data dictionary
-                foreach (KeyValuePair<string, string> kvp in participant.data)
-                {
-                    sbInnerOutput.Append(kvp.Value);
-                    sbInnerOutput.Append(strSeperator);
-                }
-                sbOutput.AppendLine(sbInnerOutput.ToString());
-            }
-            // Create and write the csv file
-            if (File.Exists(strFilePath))
+        private void WriteOutUpdatedParticipantsFile(string outputPathJson, List<Participant> updatedParticipants)
+        {
+            if (File.Exists(outputPathJson))
             {
-                File.Delete(strFilePath);
+                throw new Exception($"Output file '{outputPathJson}' already exists. Exiting");
             }
-            File.WriteAllText(strFilePath, sbOutput.ToString());
-            string json = JsonSerializer.Serialize(historicalParticipants);
-            File.WriteAllText(strFilePathJson, json);
-            Console.WriteLine("Participant data successfully written to " + strFilePath);
-            return 0;
+
+            string json = JsonConvert.SerializeObject(updatedParticipants, Formatting.Indented);
+            File.WriteAllText(outputPathJson, json);
+            Console.WriteLine("Participant data successfully written to " + outputPathJson);
         }
     }
 }
