@@ -24,7 +24,7 @@ namespace BuddyChatCLI
         /// Reads from .csv file and creates a list of participants
         /// </summary>
         /// <param name="filename">The name of the file to be parsed </param>
-        public static List<Participant> ReadInHistoricalParticipantData(string filename) 
+        public static IList<Participant> ReadInHistoricalParticipantData(string filename) 
         {
             List<Participant> totalparticipantData = new List<Participant>();
             using (TextFieldParser csvParser = new TextFieldParser(filename))
@@ -53,7 +53,7 @@ namespace BuddyChatCLI
         /// </summary>
         /// <param name="filename">The name of the file to be parsed </param>
         /// <param name="existingParticipants">The list of existing participants.</param>
-        public static List<Participant> MergeNewSignupWithHistoricalData(string filename, List<Participant> existingParticipants)
+        public static IList<Participant> MergeNewSignupWithHistoricalData(string filename, IList<Participant> existingParticipants)
         {
             using (TextFieldParser csvParser = new TextFieldParser(filename))
             {
