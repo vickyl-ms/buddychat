@@ -47,6 +47,7 @@ namespace BuddyChatCLI
         {
             ValidateOptions();
 
+<<<<<<< HEAD
             // Read in historical participants file if there is one
             IList<Participant> historicalParticipants = ReadInHistoricalParticipantsData(this.HistoricalParticipantsFile);
 
@@ -72,15 +73,87 @@ namespace BuddyChatCLI
             
             // Write out updated participant file
             WriteOutUpdatedParticipantsFile(this.UpdateParticipantsFile, updatedParticipants);
+=======
+            IList<Participant> historicalParticipants = ParticipantHelper.ReadInHistoricalParticipantData(
+                Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName));
+            IList<Participant> updatedParticipants = ParticipantHelper.MergeNewSignupWithHistoricalData(
+                this.NewSignupFile, historicalParticipants);
+
+            IList<PairingHistory> historicalPairingData = ReadInHistoricalPairingData(
+                Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName));
+            IList<PairingHistory> updatedPairingData = UpdatePairingData(this.NewSignupFile, historicalPairingData);
+            
+            string outputFilePath = Path.Combine(this.OutputPath, Defaults.ParticipantsFileName);
+            WriteOutUpdatedParticipantsFile(outputFilePath, updatedParticipants);
+
+            outputFilePath = Path.Combine(this.OutputPath, Defaults.PairingHistoryFileName);
+            WriteOutUpdatedPairingDataFile(outputFilePath, updatedPairingData);
+>>>>>>> 20f0fc3e7cd6082246ef61147f594ab5fac942e6
 
             return (int)ReturnCode.Success;
         }
 
+<<<<<<< HEAD
         private IList<Participant> ReadInHistoricalParticipantsData(string historicalParticipantsFile)
+=======
+        private void WriteOutUpdatedPairingDataFile(string outputFilePath, IList<PairingHistory> updatedPairingData)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IList<PairingHistory> UpdatePairingData(string newSignupFile, IList<PairingHistory> historicalPairingData)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IList<PairingHistory> ReadInHistoricalPairingData(string v)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ValidateOptions()
+        {
+            if (String.IsNullOrWhiteSpace(this.SessionId))
+            {
+                throw new ArgumentException("Session Id is required!");
+            }
+
+            if (!File.Exists(this.NewSignupFile))
+            {
+                string errMsg = $"No '{this.NewSignupFile}' found. New signup file must exist.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.ParticipantsFileName)))
+            {
+                Console.WriteLine($"No '{Defaults.ParticipantsFileName}' file found in {this.PathToHistoricalData}. Creating new file.");
+            }
+
+            if (!File.Exists(Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName)))
+            {
+                Console.WriteLine($"No '{Defaults.PairingHistoryFileName}' file found in {this.PathToHistoricalData}. Creating new file.");
+            }
+
+            if (String.IsNullOrWhiteSpace(this.OutputPath))
+            {
+                this.OutputPath = Path.Combine(Directory.GetCurrentDirectory(), SessionId);
+                Console.WriteLine($"No output path specified. Defaulting to '{this.OutputPath}'.");
+            }
+
+            if (!Directory.Exists(this.OutputPath))
+            {
+                Console.WriteLine($"Output directory '{this.OutputPath}' does not exist. Creating directory.");
+                Directory.CreateDirectory(this.OutputPath);
+            }
+        }
+
+        private void WriteOutUpdatedParticipantsFile(string outputPathJson, IList<Participant> updatedParticipants)
+>>>>>>> 20f0fc3e7cd6082246ef61147f594ab5fac942e6
         {
             IList<Participant> historicalParticipants = new List<Participant>();
             if (File.Exists(historicalParticipantsFile))
             {
+<<<<<<< HEAD
                 string historicalParticipantsFileContent = File.ReadAllText(historicalParticipantsFile);
                 historicalParticipants = JsonConvert.DeserializeObject<IList<Participant>>(historicalParticipantsFileContent);
             }
@@ -230,6 +303,9 @@ namespace BuddyChatCLI
                     Console.Out.WriteLine("Not overwriting file. Exiting."); 
                     return;
                 }
+=======
+                throw new Exception($"Output file '{outputPathJson}' already exists. Exiting.");
+>>>>>>> 20f0fc3e7cd6082246ef61147f594ab5fac942e6
             }
 
             string json = JsonConvert.SerializeObject(updatedParticipants, Formatting.Indented);
