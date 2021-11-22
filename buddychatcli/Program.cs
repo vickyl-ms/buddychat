@@ -1,4 +1,7 @@
-﻿using CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using CommandLine;
+using CommandLine.Text;
 
 namespace BuddyChatCLI
 {
@@ -12,7 +15,8 @@ namespace BuddyChatCLI
 
     public static class Defaults
     {
-        public static readonly string SignUpFileName = "signup.csv";
+        public static readonly string SignupsFilename = "signups.csv";
+        public static readonly string SignupsConfigFilename = "signupsconfig.json";
         public static readonly string ParticipantsFileName = "Participants.json";
         public static readonly string PairingHistoryFileName = "PairingHistory.json";
         public static readonly string NewPairingFileName = "RandomPairings.json";
@@ -22,15 +26,45 @@ namespace BuddyChatCLI
     {
         public static int Main(string[] args)
         {
-            // Create a case insensitive parser
-            var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
+            // Set console to support unicode
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantDataGenerator>(args)
+            // Create a case insensitive parser
+            var parser = new Parser(cfg => 
+                {
+                    cfg.CaseSensitive = false;
+                    cfg.IgnoreUnknownArguments = false;
+                    cfg.HelpWriter = Console.Error;
+                });
+
+            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater>(args)
                     .MapResult(
-                      (EmailGenerator emailGenerator) => emailGenerator.Execute(),
-                      (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
-                      (ParticipantDataGenerator participantDataGenerator) => participantDataGenerator.Execute(),
-                      errs => (int)ReturnCode.ErrorParsingCommandLine);
+                        (EmailGenerator emailGenerator) => emailGenerator.Execute(),
+                        (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
+                        (ParticipantUpdater participantUpdater) => participantUpdater.Execute(),
+                        errors => (int)ReturnCode.ErrorParsingCommandLine);
+        }
+
+        public static bool AskUserShouldOverwrite()
+        {
+            ConsoleKeyInfo keyInfo;
+            
+            do
+            {
+                keyInfo = Console.ReadKey(true);
+                switch(keyInfo.KeyChar)
+                {
+                    case 'Y':
+                    case 'y': break;
+                    case 'q':
+                    case 'Q':
+                    case 'N':
+                    case 'n': return false;
+                    default: Console.Out.WriteLine("Invalid char: " + keyInfo.KeyChar); break;
+                }
+            } while(keyInfo.KeyChar != 'y' && keyInfo.KeyChar != 'Y');
+
+            return true;
         }
     }
 }

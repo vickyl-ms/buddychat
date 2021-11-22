@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Text;
 
 namespace BuddyChatCLI
 {
     public class Participant : IEquatable<Participant>
     {
-        // list of all the sessions the participant had participated
-        public List<string> session_participated { get; set; }
-        
         // participant full name
         public string name { get; set; }
         public string first_name => name.Split(' ')[0];
@@ -16,19 +14,59 @@ namespace BuddyChatCLI
         public string email { get; set; }
         
         // participant data
-        public Dictionary<string, string> data { get; set; }
+        public IDictionary<string, string> data { get; set; }
+
+        // list of all the sessions the participant had participated
+        public IList<string> session_participated { get; set; }
 
         public override string ToString()
         {
-            displayDictionaryData(data);
-            return "Name: " + name + "   Email: " + email;
+            return "Name: " + name + "; Email: " + email;
         }
 
-        public void displayDictionaryData(Dictionary<string, string> data)
+        public string ToDetailedString()
         {
+            StringBuilder output = new StringBuilder();
+            output.AppendLine($"Name: {name}");
+            output.AppendLine($"Email: {email}");
+
+            if(session_participated?.Count > 0)
+            {
+                output.Append("Sessions: ");
+                output.AppendJoin(", ", session_participated);
+                output.AppendLine();
+            }
+
             foreach (KeyValuePair<string, string> kvp in data)
             {
-                Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                output.AppendLine($"{kvp.Key}: {kvp.Value}");
+            }
+
+            return output.ToString();
+        }
+
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new Exception("Email cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new Exception("Name cannot be empty.");
+            }
+
+            if (this.session_participated != null)
+            {
+                HashSet<string> set = new HashSet<string>();
+                foreach(string s in this.session_participated)
+                {
+                    if (!set.Add(s))
+                    {
+                        throw new Exception($"Participated session contains sessionId '{s}' more than once.");
+                    }
+                }
             }
         }
 
@@ -47,6 +85,20 @@ namespace BuddyChatCLI
             return base.GetHashCode();
         }
 
+        public void AddSession(string sessionId)
+        {
+            if (this.session_participated == null)
+            {
+                this.session_participated = new List<string>();
+            }
+
+            if (this.session_participated.Contains(sessionId))
+            {
+                throw new Exception("Participated Session already contains sessionId: " + sessionId);
+            }
+            
+            session_participated.Insert(0, sessionId);
+        }
     }
 }
 

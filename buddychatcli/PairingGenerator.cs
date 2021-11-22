@@ -30,19 +30,19 @@ namespace BuddyChatCLI
         private Random rng = new Random();  
 
         [Option(shortName: 's',
-                longName: "sessionId",
+                longName: "SessionId",
                 Required = true,
                 HelpText = "The id for this specific session.")]
         public string SessionId { get; set; }
 
         [Option(shortName: 'p',
-                longName: "pathToHistoricalData",
+                longName: "PathToHistoricalData",
                 Required = false,
                 HelpText = "The location of participant and history json. Default is current directory.")]
         public string PathToHistoricalData { get; set; } = Directory.GetCurrentDirectory();
 
         [Option(shortName: 'o',
-                longName: "outputPath",
+                longName: "OutputPath",
                 Required = false,
                 HelpText = "Output location. Default is current directory.")]
         public string OutputPath { get; set; } = Directory.GetCurrentDirectory();
