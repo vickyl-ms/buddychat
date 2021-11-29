@@ -3,222 +3,143 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("BuddyChatCLI.test")]
 namespace BuddyChatCLI
 {
-    [Verb("UpdatePairings", HelpText = "Updates pairing history data by combining historical data with new pairing data")]
+    [Verb("UpdatePairingHistory", HelpText = "Updates pairing history data by combining historical data with new pairing data")]
     public class PairingHistoryUpdater
     {
         [Option(shortName: 'h',
-                longName: "HistoricalPairingsFile",
+                longName: "PairingHistoryFile",
                 Required = false,
-                HelpText = "Path to json file with historical pairing data. Defaults to pairings.json in current directory.")]
-        public string HistoricalPairingsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.PairingHistoryFileName);
+                HelpText = "Path to json file with historical pairing data. Defaults to PairingHistory.json in current directory.")]
+        public string PairingHistoryFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.PairingHistoryFileName);
 
         [Option(shortName: 'n',
                 longName: "NewPairingsFile",
                 Required = false,
-                HelpText = "Filename of csv with new pairings json file generated with CreatePairing command. Defaults to NewPairings in current directory")]
+                HelpText = "Filename of new pairings json file generated with CreatePairing command. Defaults to NewPairings.json in current directory")]
         public string NewPairingsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
 
         [Option(shortName: 'u',
-                longName: "UpdatePairingFile",
+                longName: "UpdatedPairingHistoryFile",
                 Required = false,
                 HelpText = "Path to put the updated pairing data. Defaults to file named pairings.json in current directory")]
-        public string UpdateParticipantsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.PairingHistoryFileName);
+        public string UpdatedPairingHistoryFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.PairingHistoryFileName);
 
         public int Execute()
         {
             ValidateOptions();
 
             // Read in historical participants file if there is one
-            IList<Participant> historicalParticipants = ReadInHistoricalParticipantsData(this.HistoricalPairingsFile);
+            IDictionary<string, PairingHistory> pairingHistories = ReadInPairingHistoryData(this.PairingHistoryFile);
 
-            // Read in signups file
-            //IList<Participant> newParticipants = SignupsReader.CreateParticipantsFromNewSignUps(this.NewPairingsFile, this.SignupsConfigFile);
+            // Read in new pairings file
+            PairingList newPairings = JsonConvert.DeserializeObject<PairingList>(File.ReadAllText(this.NewPairingsFile));
 
-            // Read in historical pairings file
-            // IList<PairingHistory> historicalPairingData = new List<PairingHistory>();
-            // string historicalPairingsFilePath = Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName);
-            // if (File.Exists(historicalPairingsFilePath))
-            // {
-            //     string historicalPairingsFileContent = File.ReadAllText(historicalPairingsFilePath);
-            //     historicalPairingData = JsonConvert.DeserializeObject<IList<PairingHistory>>(historicalPairingsFileContent);
-            // }
+            // Validate pairing file
+            PairingGenerator.ValidatePairing(newPairings.pairings, pairingHistories);
 
-            // Merge signup data with historical participant data
-            // NOTE: this method mutates the historical participants list!!
-            // IList<Participant> updatedParticipants = MergeNewSignupWithHistoricalData(
-            //     historicalParticipants, newParticipants, this.SessionId);
-            
-            // sort alphabetically
-            // updatedParticipants = updatedParticipants.OrderBy(p => p.name).ToList();
+            // Update pairingHistories with new pairings
+            UpdatePairingHistoriesWithNewPairings(pairingHistories, newPairings);
             
             // Write out updated participant file
-            // WriteOutUpdatedParticipantsFile(this.UpdateParticipantsFile, updatedParticipants);
+            WriteOutUpdatedPairingHistoryFile(this.UpdatedPairingHistoryFile, pairingHistories);
 
             return (int)ReturnCode.Success;
         }
 
-        private IList<Participant> ReadInHistoricalParticipantsData(string historicalParticipantsFile)
+        private void UpdatePairingHistoriesWithNewPairings(IDictionary<string, PairingHistory> pairingHistories, PairingList newPairings)
         {
-            IList<Participant> historicalParticipants = new List<Participant>();
-            if (File.Exists(historicalParticipantsFile))
+            foreach (PairingList.Entry pairing in newPairings.pairings)
             {
-                string historicalParticipantsFileContent = File.ReadAllText(historicalParticipantsFile);
-                historicalParticipants = JsonConvert.DeserializeObject<IList<Participant>>(historicalParticipantsFileContent);
-            }
-
-            foreach(Participant p in historicalParticipants)
-            {
-                p.Validate();
-            }
-
-            return historicalParticipants;
-        }
-
-        /// <summary>
-        /// NOTE: This method mutates the objects in historical participants!!
-        /// </summary>
-        /// <param name="historicalParticipants"></param>
-        /// <param name="newParticipants"></param>
-        /// <param name="sessionId"></param>
-        /// <returns></returns>
-        public static IList<Participant> MergeNewSignupWithHistoricalData(
-            IList<Participant> historicalParticipants, 
-            IList<Participant> newParticipants,
-            string sessionId)
-        {
-            IList<Participant> updatedParticipants = new List<Participant>(historicalParticipants);
-            int numNewParticipantsAdded = 0; 
-            int numParticipantsUpdated = 0;
-            int numParticipantsReusingInfo = 0;
-
-            // Create dictionary of historical particpants
-            IDictionary<string, Participant> historicalParticipantsAsDictionary = new Dictionary<string, Participant>();
-
-            foreach(Participant p in historicalParticipants)
-            {
-                if (historicalParticipantsAsDictionary.ContainsKey(p.email))
+                PairingHistory history1;
+                if (!pairingHistories.TryGetValue(pairing.participant1Email.ToLowerInvariant(), out history1))
                 {
-                    throw new Exception($"Historical participants contains multiple entries with email: {p.email}.");
-                }
+                    history1 = new PairingHistory {
+                        email = pairing.participant1Email,
+                        history = new List<PairingHistory.Entry>()
+                    };
 
-                historicalParticipantsAsDictionary.Add(p.email, p);
-            }
-
-            // Go through new participants. Update session ids and inserting new participants into updated list
-            foreach (Participant p in newParticipants)
-            {
-                Participant participantToUpdate;
-
-                if (historicalParticipantsAsDictionary.TryGetValue(p.email, out participantToUpdate))
-                {
-                    // check if new participant has data fields, completely replace historical data field if so
-                    if (p.data.Count > 0)
-                    {
-                        Console.Out.WriteLine($"Participant '{p.ToString()}' had data updated:");
-                        Console.Out.WriteLine("Old data:");
-                        Console.Out.WriteLine(participantToUpdate.ToDetailedString());
-                        Console.Out.WriteLine("New data:");
-                        Console.Out.WriteLine(p.ToDetailedString());
-                        
-                        participantToUpdate.data = p.data;
-                        numParticipantsUpdated++;
-                    }
-                    else
-                    {
-                        Console.Out.WriteLine($"Participant '{p.ToString()}' reusing signup info.");
-                        numParticipantsReusingInfo++;
-                    }
+                    pairingHistories.Add(history1.email.ToLowerInvariant(), history1);
+                    Console.WriteLine($"New pairing history record created for {history1.email}");
                 }
                 else
                 {
-                    if (p.data.Count == 0)
-                    {
-                        throw new Exception($"Participant '{p.ToString()}' is not in historical data but did not provide signup data.");
-                    }
-
-                    participantToUpdate = p;
-                    updatedParticipants.Add(p);
-
-                    Console.Out.WriteLine($"Participant '{p.ToString()}' added to participant list.");
-                    numNewParticipantsAdded++;
+                    Console.WriteLine($"Pairing history updated for {history1.email}");
                 }
 
-                participantToUpdate.AddSession(sessionId);
+                history1.history.Insert(0, new PairingHistory.Entry {
+                    buddy_email = pairing.participant2Email,
+                    sessionId = newPairings.sessionId
+                });
+
+                PairingHistory history2;
+                if (!pairingHistories.TryGetValue(pairing.participant2Email.ToLowerInvariant(), out history2))
+                {
+                    history2 = new PairingHistory {
+                        email = pairing.participant2Email,
+                        history = new List<PairingHistory.Entry>()
+                    };
+
+                    pairingHistories.Add(history2.email.ToLowerInvariant(), history2);
+                    Console.WriteLine($"New pairing history record created for {history2.email}");
+                }
+                else
+                {
+                    Console.WriteLine($"Pairing history updated for {history2.email}");
+                }
+
+                history2.history.Insert(0, new PairingHistory.Entry {
+                    buddy_email = pairing.participant1Email,
+                    sessionId = newPairings.sessionId
+                });
+            }
+        }
+
+        private IDictionary<string, PairingHistory> ReadInPairingHistoryData(string pairingHistoryFile)
+        {
+            IDictionary<string, PairingHistory> pairingHistories = new Dictionary<string, PairingHistory>();
+            
+            if (File.Exists(pairingHistoryFile))
+            {
+                string pairingHistoryFileContent = File.ReadAllText(pairingHistoryFile);
+                pairingHistories = JsonConvert.DeserializeObject<IDictionary<string, PairingHistory>>(pairingHistoryFileContent);
             }
 
-            ConsoleColor saved = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("Summary:");
-            Console.Out.WriteLine($"{numNewParticipantsAdded} new participants added.");
-            Console.Out.WriteLine($"{numParticipantsReusingInfo} returning participants reusing signup info.");
-            Console.Out.WriteLine($"{numParticipantsUpdated} returning participants updating signup info.");
-            Console.Out.WriteLine();
-            Console.ForegroundColor = saved;
-            
-            return updatedParticipants;
+            return pairingHistories;
         }
-
-        private void WriteOutUpdatedPairingDataFile(string outputFilePath, IList<PairingHistory> updatedPairingData)
-        {
-            Console.WriteLine($"Writing output to {outputFilePath}.");
-            File.WriteAllText(
-                outputFilePath,
-                JsonConvert.SerializeObject(updatedPairingData, Formatting.Indented));
-        }
-
-        private IList<PairingHistory> UpdatePairingData(string newSignupFile, IList<PairingHistory> historicalPairingData)
-        {
-            throw new NotImplementedException();
-        }
-
-        private IList<PairingHistory> ReadInHistoricalPairingData(string pairingHistoryFilePath)
-        {
-            string json = File.ReadAllText(pairingHistoryFilePath);
-            return JsonConvert.DeserializeObject<IList<PairingHistory>>(json);
-        }
-
+ 
         private void ValidateOptions()
         {
-            // if (String.IsNullOrWhiteSpace(this.SessionId))
-            // {
-            //     throw new ArgumentException("Session Id is required!");
-            // }
-
             if (!File.Exists(this.NewPairingsFile))
             {
                 string errMsg = $"No '{this.NewPairingsFile}' found. New signup file must exist.";
                 throw new ArgumentException(errMsg);
             }
 
-            // if (!File.Exists(this.SignupsConfigFile))
-            // {
-            //     string errMsg = $"No '{this.SignupsConfigFile}' found. Signup config file must exist.";
-            //     throw new ArgumentException(errMsg);
-            // }
+            if (!File.Exists(this.PairingHistoryFile))
+            {
+                ConsoleColor saved = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"No '{this.PairingHistoryFile}' found.  This command will create a new one.");
+                Console.ForegroundColor = saved;
 
-            if (!File.Exists(this.HistoricalPairingsFile))
-            {
-                Console.WriteLine($"No '{this.HistoricalPairingsFile}' found.  This command will create a new one.");
             }
-            else if (this.HistoricalPairingsFile == this.UpdateParticipantsFile)
+            else if (this.PairingHistoryFile.Equals(this.UpdatedPairingHistoryFile, StringComparison.InvariantCultureIgnoreCase))
             {
-                throw new ArgumentException($"Updated participants file path cannot be the same as historical participants file path ({this.HistoricalPairingsFile}).\n" +
-                    "Make sure to specify either --HistoricalParticipantsFile or --UpdatedParticipantsFile on the commandline.");
+                throw new ArgumentException($"Updated pairing history file path cannot be the same as historical participants file path ({this.PairingHistoryFile}).\n" +
+                    "Make sure to specify either --PairingHistoryFile or --UpdatedPairingHistoryFile on the commandline.");
             }
         }
 
-        private void WriteOutUpdatedParticipantsFile(string updatedParticipantsFile, IList<Participant> updatedParticipants)
+        private void WriteOutUpdatedPairingHistoryFile(string updatedPairingHistoryFile, IDictionary<string, PairingHistory> updatedPairingHistories)
         {
-            if (File.Exists(updatedParticipantsFile))
+            if (File.Exists(updatedPairingHistoryFile))
             {
-                Console.Out.WriteLine($"Output file '{updatedParticipantsFile}' already exists. Overwrite? Y/N");
+                Console.Out.WriteLine($"Output file '{updatedPairingHistoryFile}' already exists. Overwrite? Y/N");
                 if (!Program.AskUserShouldOverwrite())
                 {
                     Console.Out.WriteLine("Not overwriting file. Exiting."); 
@@ -226,9 +147,9 @@ namespace BuddyChatCLI
                 }
             }
 
-            string json = JsonConvert.SerializeObject(updatedParticipants, Formatting.Indented);
-            File.WriteAllText(updatedParticipantsFile, json);
-            Console.WriteLine("Participant data successfully written to " + updatedParticipantsFile);
+            string json = JsonConvert.SerializeObject(updatedPairingHistories, Formatting.Indented);
+            File.WriteAllText(updatedPairingHistoryFile, json);
+            Console.WriteLine("Participant data successfully written to " + updatedPairingHistoryFile);
         }
     }
 }

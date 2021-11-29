@@ -1,26 +1,18 @@
 {
-  "sessionId": "Current",
+  "sessionId": "New",
   "pairings":
   [
     {
-      "participant1": {
-        "name": "FirstName1 LastName1",
-        "email": "FirstName1@test.com"
-      },
-      "participant2": {
-        "name": "FirstName2 LastName2",
-        "email": "FirstName2@test.com"
-      }
+      "participant1Name": "FirstName1 LastName1",
+      "participant1Email": "PARTICIPANT1@email.com",
+      "participant2Name": "FirstName2 LastName2",
+      "participant2Email": "participant2@email.com"
     },
     {
-      "participant1": {
-        "name": "FirstName3 LastName3",
-        "email": "FirstName3@test.com"
-      },
-      "participant2": {
-        "name": "FirstName4 LastName4",
-        "email": "FirstName4@test.com"
-      }
+      "participant1Name": "FirstName3 LastName3",
+      "participant1Email": "participant3@email.com",
+      "participant2Name": "FirstName6 LastName6",
+      "participant2Email": "PARTICIPANT6@email.com"
     }
   ]
 }

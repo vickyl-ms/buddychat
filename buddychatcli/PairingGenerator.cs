@@ -66,6 +66,8 @@ namespace BuddyChatCLI
             }
 
             PairingList pairings = Generate(this.SessionId, participants, pairingHistories);
+
+            ValidatePairing(pairings.pairings, pairingHistories);
             
             WritePairingsToFile(pairings, this.NewPairingsFile);
             
@@ -161,7 +163,7 @@ namespace BuddyChatCLI
             string sessionId)
         {
             PairingList pairingList = new PairingList {
-                session = SessionId,
+                sessionId = SessionId,
                 pairings = new List<PairingList.Entry>()
             };
 
@@ -270,11 +272,11 @@ namespace BuddyChatCLI
             {
                 // Get pairing history for p if available
                 PairingHistory history;
-                pairingHistories.TryGetValue(p.email, out history);
+                pairingHistories.TryGetValue(p.email.ToLowerInvariant(), out history);
 
                 // Get potential buddies by filtering out p itself and anyone on p's pairing history
                 List<string> potentialBuddies = sessionParticipantEmails
-                    .Where(email => email != p.email && 
+                    .Where(email => !email.Equals(p.email, StringComparison.InvariantCultureIgnoreCase) && 
                                 (history == null || !history.WasBuddyWith(email))).ToList();
 
                 // Error out if no potential buddies
@@ -303,7 +305,7 @@ namespace BuddyChatCLI
                 string logMsg = $"{++i}. {p.email}: " + (history != null? string.Join(", ", potentialBuddies) : "All");
                 Console.WriteLine(logMsg);
 
-                potentialBuddyMap.Add(p.email, potentialBuddies);
+                potentialBuddyMap.Add(p.email.ToLowerInvariant(), potentialBuddies);
             }
 
             return potentialBuddyMap;
@@ -336,7 +338,7 @@ namespace BuddyChatCLI
         /// <param name="candidatePairing">List of Pairing Entries</param>
         /// <param name="pairingHistory">List of PairingHistory entries</param>
         /// <returns></returns>
-        public bool ValidatePairing(
+        public static bool ValidatePairing(
             IEnumerable<PairingList.Entry> candidatePairing, 
             IDictionary<string, PairingHistory> pairingHistory)
         {
@@ -344,7 +346,7 @@ namespace BuddyChatCLI
             foreach (var pair in candidatePairing)
             {
                 PairingHistory history;
-                if (pairingHistory.TryGetValue(pair.participant1Email, out history))
+                if (pairingHistory.TryGetValue(pair.participant1Email.ToLowerInvariant(), out history))
                 {
                     foreach (var historyEntry in history.history)
                     {
@@ -357,7 +359,7 @@ namespace BuddyChatCLI
                 }
 
                 // This technically should not be possible if the data is correct but adding just in case.
-                if (pairingHistory.TryGetValue(pair.participant2Email, out history))
+                if (pairingHistory.TryGetValue(pair.participant2Email.ToLowerInvariant(), out history))
                 {
                     foreach (var historyEntry in history.history)
                     {

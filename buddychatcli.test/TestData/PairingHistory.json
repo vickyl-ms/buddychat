@@ -4,7 +4,7 @@
     "history": [
       {
         "buddy_email": "participant5@email.com",
-        "session": "old"
+        "sessionId": "old"
       }
     ]
   },
@@ -13,7 +13,7 @@
     "history": [
       {
         "buddy_email": "participant5@email.com",
-        "session": "old"
+        "sessionId": "old"
       }
     ]
   },
@@ -22,7 +22,7 @@
     "history": [
       {
         "buddy_email": "participant5@email.com",
-        "session": "old"
+        "sessionId": "old"
       }
     ]
   },
@@ -31,11 +31,11 @@
     "history": [
       {
         "buddy_email": "participant1@email.com",
-        "session": "old"
+        "sessionId": "old"
       },
       {
         "buddy_email": "participant2@email.com",
-        "session": "old"
+        "sessionId": "old"
       }
     ]
   }

@@ -38,11 +38,12 @@ namespace BuddyChatCLI
                     cfg.HelpWriter = Console.Error;
                 });
 
-            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater>(args)
+            return parser.ParseArguments<EmailGenerator, PairingGenerator, ParticipantUpdater, PairingHistoryUpdater>(args)
                     .MapResult(
                         (EmailGenerator emailGenerator) => emailGenerator.Execute(),
                         (PairingGenerator pairingGenerator) => pairingGenerator.Execute(),
                         (ParticipantUpdater participantUpdater) => participantUpdater.Execute(),
+                        (PairingHistoryUpdater pairingHistoryUpdater) => pairingHistoryUpdater.Execute(),
                         errors => (int)ReturnCode.ErrorParsingCommandLine);
         }
 

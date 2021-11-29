@@ -53,15 +53,6 @@ namespace BuddyChatCLI
             // Read in signups file
             IList<Participant> newParticipants = SignupsReader.CreateParticipantsFromNewSignUps(this.NewSignupsFile, this.SignupsConfigFile);
 
-            // Read in historical pairings file
-            // IList<PairingHistory> historicalPairingData = new List<PairingHistory>();
-            // string historicalPairingsFilePath = Path.Combine(this.PathToHistoricalData, Defaults.PairingHistoryFileName);
-            // if (File.Exists(historicalPairingsFilePath))
-            // {
-            //     string historicalPairingsFileContent = File.ReadAllText(historicalPairingsFilePath);
-            //     historicalPairingData = JsonConvert.DeserializeObject<IList<PairingHistory>>(historicalPairingsFileContent);
-            // }
-
             // Merge signup data with historical participant data
             // NOTE: this method mutates the historical participants list!!
             IList<Participant> updatedParticipants = MergeNewSignupWithHistoricalData(
@@ -115,12 +106,12 @@ namespace BuddyChatCLI
 
             foreach(Participant p in historicalParticipants)
             {
-                if (historicalParticipantsAsDictionary.ContainsKey(p.email))
+                if (historicalParticipantsAsDictionary.ContainsKey(p.email.ToLowerInvariant()))
                 {
                     throw new Exception($"Historical participants contains multiple entries with email: {p.email}.");
                 }
 
-                historicalParticipantsAsDictionary.Add(p.email, p);
+                historicalParticipantsAsDictionary.Add(p.email.ToLowerInvariant(), p);
             }
 
             // Go through new participants. Update session ids and inserting new participants into updated list
@@ -128,7 +119,7 @@ namespace BuddyChatCLI
             {
                 Participant participantToUpdate;
 
-                if (historicalParticipantsAsDictionary.TryGetValue(p.email, out participantToUpdate))
+                if (historicalParticipantsAsDictionary.TryGetValue(p.email.ToLowerInvariant(), out participantToUpdate))
                 {
                     // check if new participant has data fields, completely replace historical data field if so
                     if (p.data.Count > 0)
@@ -178,25 +169,6 @@ namespace BuddyChatCLI
             return updatedParticipants;
         }
 
-        private void WriteOutUpdatedPairingDataFile(string outputFilePath, IList<PairingHistory> updatedPairingData)
-        {
-            Console.WriteLine($"Writing output to {outputFilePath}.");
-            File.WriteAllText(
-                outputFilePath,
-                JsonConvert.SerializeObject(updatedPairingData, Formatting.Indented));
-        }
-
-        private IList<PairingHistory> UpdatePairingData(string newSignupFile, IList<PairingHistory> historicalPairingData)
-        {
-            throw new NotImplementedException();
-        }
-
-        private IList<PairingHistory> ReadInHistoricalPairingData(string pairingHistoryFilePath)
-        {
-            string json = File.ReadAllText(pairingHistoryFilePath);
-            return JsonConvert.DeserializeObject<IList<PairingHistory>>(json);
-        }
-
         private void ValidateOptions()
         {
             if (String.IsNullOrWhiteSpace(this.SessionId))
@@ -220,7 +192,7 @@ namespace BuddyChatCLI
             {
                 Console.WriteLine($"No '{this.HistoricalParticipantsFile}' found.  This command will create a new one.");
             }
-            else if (this.HistoricalParticipantsFile == this.UpdateParticipantsFile)
+            else if (this.HistoricalParticipantsFile.Equals(this.UpdateParticipantsFile, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new ArgumentException($"Updated participants file path cannot be the same as historical participants file path ({this.HistoricalParticipantsFile}).\n" +
                     "Make sure to specify either --HistoricalParticipantsFile or --UpdatedParticipantsFile on the commandline.");

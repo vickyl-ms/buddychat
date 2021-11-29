@@ -57,6 +57,12 @@ namespace BuddyChatCLI
                 throw new Exception("Name cannot be empty.");
             }
 
+            if (email.ToLowerInvariant() != email)
+            {
+                Console.WriteLine($"Warning: Participant '{email}' email address is unexpected not lower cased. Converting to lower case.");
+                email = email.ToLowerInvariant();
+            }
+
             if (this.session_participated != null)
             {
                 HashSet<string> set = new HashSet<string>();

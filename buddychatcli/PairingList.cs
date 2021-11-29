@@ -7,7 +7,7 @@ namespace BuddyChatCLI
     /// </summary>
     public class PairingList
     {
-        public string session;
+        public string sessionId;
 
         /// <summary>
         /// Pairing Generator returns a list of Pairing Entries

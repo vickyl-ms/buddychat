@@ -8,7 +8,7 @@ namespace BuddyChatCLI
     {
         public string email;
 
-        public struct PairingHistoryEntry
+        public struct Entry
         {
             public string buddy_email;
             public string sessionId;
@@ -16,7 +16,7 @@ namespace BuddyChatCLI
 
         // List of Pairing History entries that represent the buddy someone
         // was paired with for each session
-        public List<PairingHistoryEntry> history;
+        public List<Entry> history;
 
         /// <summary>
         /// Gets a list of emails for all previous buddies

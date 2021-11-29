@@ -105,7 +105,7 @@ namespace BuddyChatCLI
 
             // Creating Person object
             Participant participant = new Participant {
-                email = email,
+                email = email.ToLowerInvariant(),
                 name = name,
                 data = participantData
             };

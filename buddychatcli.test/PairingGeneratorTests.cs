@@ -62,12 +62,15 @@ namespace BuddyChatCLI.test
                 PairingHistoryFile = Defaults.PairingHistoryFileName,
                 SessionId = "Current"
             };
-            
-            generator.Execute();
 
             string expectedOutputFile = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
-            Assert.True(File.Exists(expectedOutputFile));
-            
+            if (File.Exists(expectedOutputFile))
+            {
+                File.Delete(expectedOutputFile);
+            }
+
+            generator.Execute();
+
             string actualPairingsContent = File.ReadAllText(expectedOutputFile);
             PairingList pairings = JsonConvert.DeserializeObject<PairingList>(actualPairingsContent);
 
