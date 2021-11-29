@@ -1,11 +1,16 @@
 {
+  "participant1@email.com": {
+    "email": "participant1@email.com",
+    "history": [
+      {
+        "buddy_email": "participant5@email.com",
+        "session": "old"
+      }
+    ]
+  },
   "participant2@email.com": {
     "email": "participant2@email.com",
     "history": [
-      {
-        "buddy_email": "participant1@email.com",
-        "session": "old"
-      },
       {
         "buddy_email": "participant5@email.com",
         "session": "old"
@@ -14,15 +19,7 @@
   },
   "participant3@email.com": {
     "email": "participant3@email.com",
-    "history": []
-  },
-  "participant4@email.com": {
-    "email": "participant4@email.com",
     "history": [
-      {
-        "buddy_email": "participant1@email.com",
-        "session": "old"
-      },
       {
         "buddy_email": "participant5@email.com",
         "session": "old"
@@ -31,6 +28,15 @@
   },
   "participant5@email.com": {
     "email": "participant5@email.com",
-    "history": []
+    "history": [
+      {
+        "buddy_email": "participant1@email.com",
+        "session": "old"
+      },
+      {
+        "buddy_email": "participant2@email.com",
+        "session": "old"
+      }
+    ]
   }
 }

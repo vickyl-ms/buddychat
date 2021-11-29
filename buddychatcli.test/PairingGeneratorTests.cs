@@ -9,171 +9,23 @@ namespace BuddyChatCLI.test
 {
     public class PairingGeneratorTests
     {
-        protected IList<Participant> testParticipants;
-
-        protected Dictionary<string, PairingHistory> testPairingHistory;
-
         public PairingGeneratorTests()
         {
-            // no session participant
-            Participant participant1 = new Participant {
-                email = "participant1@email.com",
-                session_participated = new List<string>(),
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 1"}
-                }
-            };
-
-            // not current session participant
-            Participant participant2 = new Participant {
-                email = "participant2@email.com",
-                session_participated = new List<string>{"old", "older", "oldest"},
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 2"}
-                }
-            };
-
-            // current session participant
-            Participant participant3 = new Participant {
-                email = "participant3@email.com",
-                session_participated = new List<string>{"curRent"},
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 3"}
-                }
-            };
-            
-            // current and old session participant
-            Participant participant4 = new Participant {
-                email = "participant4@email.com",
-                session_participated = new List<string>{"old", "older", "oldesT", "current"},
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 4"}
-                }
-            };
-            
-            // another current session participant
-            Participant participant5 = new Participant {
-                email = "participant5@email.com",
-                session_participated = new List<string>{"old", "current", "Oldest"},
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 5"}
-                }
-            };
-
-            // another current session participant
-            Participant participant6 = new Participant {
-                email = "participant6@email.com",
-                session_participated = new List<string>{"Current", "older", "oldest"},
-                data = new Dictionary<string, string>() {
-                    { "intro", "Hi my name is participant 6"}
-                }
-            };
-
-            testParticipants = new List<Participant>() 
-            {
-                participant1,
-                participant2,
-                participant3,
-                participant4,
-                participant5,
-                participant6
-            };
-
-            // 3 can pair with anyone
-            // 4 can only pair with 5
-            // 5 can pair with 3 or 4
-            // 6 can only pair with 3
-            // Only possible pairing is 3 with 6 and 4 with 5
-            testPairingHistory = new Dictionary<string, PairingHistory>
-            {
-                // Entry for participant not in 'current' session
-                { 
-                    participant2.email,
-                    new PairingHistory 
-                    {
-                        email = participant2.email,
-                        history = new List<PairingHistory.PairingHistoryEntry>
-                        {
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant4.email,
-                                sessionId = "oldest"
-                            }
-                        }
-                    }
-                },
-                {
-                    participant3.email,
-                    // can pair with anyone
-                    new PairingHistory 
-                    {
-                        email = participant3.email,
-                        history = new List<PairingHistory.PairingHistoryEntry>()
-                    }
-                },
-                {
-                    participant4.email,
-                    // can only pair with 5
-                    new PairingHistory 
-                    {
-                        email = participant4.email,
-                        history = new List<PairingHistory.PairingHistoryEntry>
-                        {
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant3.email,
-                                sessionId = "oldest"
-                            },
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant6.email,
-                                sessionId = "old"
-                            }
-                        }
-                    }
-                },
-                {
-                    participant5.email,
-                    // can pair with 3 or 4
-                    new PairingHistory 
-                    {
-                        email = participant5.email,
-                        history = new List<PairingHistory.PairingHistoryEntry>
-                        {
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant6.email,
-                                sessionId = "oldest"
-                            }
-                        }
-                    }
-                },
-                {
-                    participant6.email,
-                    // Can only pair with 3
-                    new PairingHistory 
-                    {
-                        email = participant6.email,
-                        history = new List<PairingHistory.PairingHistoryEntry>
-                        {
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant4.email,
-                                sessionId = "oldest"
-                            },
-                            new PairingHistory.PairingHistoryEntry {
-                                buddy_email = participant5.email,
-                                sessionId = "old"
-                            }
-
-                        }
-                    }
-                }
-            };
+            // set current directory to test data dir
+            string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData");
+            Directory.SetCurrentDirectory(testDataPath);
         }
 
         [Fact]
         public void FindAllParticipantsInSession_CurrentSession()
         {
-            String[] expectedParticipants = {"participant3@email.com", "participant4@email.com", "participant5@email.com", "participant6@email.com"};
+            String[] expectedParticipants = {"participant1@email.com", "participant2@email.com", "participant4@email.com", "participant5@email.com"};
+
+            string fileContent = File.ReadAllText(Defaults.ParticipantsFileName);
+            IEnumerable<Participant> allParticipants = JsonConvert.DeserializeObject<IEnumerable<Participant>>(fileContent);
 
             PairingGenerator generator = new PairingGenerator();
-            IEnumerable<Participant> actualParticipants = generator.FindAllParticipantsInSession("current", testParticipants);
+            IEnumerable<Participant> actualParticipants = generator.FindAllParticipantsInSession("current", allParticipants);
 
             Assert.Equal(4, actualParticipants.Count());
             Assert.All(actualParticipants, participant => Assert.Contains(participant.email, expectedParticipants));
@@ -182,79 +34,32 @@ namespace BuddyChatCLI.test
         [Fact]
         public void FindAllParticipantsInSession_NonExistentSession()
         {
+
+            string fileContent = File.ReadAllText(Defaults.ParticipantsFileName);
+            IEnumerable<Participant> allParticipants = JsonConvert.DeserializeObject<IEnumerable<Participant>>(fileContent);
+
             PairingGenerator generator = new PairingGenerator();
-            IEnumerable<Participant> actualParticipants = generator.FindAllParticipantsInSession("nonexistentsession", testParticipants);
+            IEnumerable<Participant> actualParticipants = generator.FindAllParticipantsInSession("nonexistentsession", allParticipants);
 
             Assert.Empty(actualParticipants);
         }
 
         [Fact]
-        public void GenerateRandomPairings_Test()
-        {
-            String[] expectedParticipants = {"participant3@email.com", "participant4@email.com", "participant5@email.com", "participant6@email.com"};
-
-            PairingGenerator generator = new PairingGenerator();
-            IEnumerable<Participant> participants = generator.FindAllParticipantsInSession("current", testParticipants);
-            Assert.Equal(4, participants.Count());
-
-            IEnumerable<PairingEntry> pairings = generator.GenerateRandomPairings(participants);
-            Assert.Equal(2, pairings.Count());
-            Assert.All(pairings, pair => 
-                {
-                    Assert.Contains(pair.participant1.email, expectedParticipants);
-                    Assert.Contains(pair.participant2.email, expectedParticipants);
-                });
-        }
-
-        [Fact]
-        public void GenerateRandomPairings_FailsWithOddParticipants()
-        {
-            PairingGenerator generator = new PairingGenerator();
-            IEnumerable<Participant> participants = generator.FindAllParticipantsInSession("old", testParticipants);
-            Assert.Equal(3, participants.Count());
-            Assert.Throws<Exception>(() => generator.GenerateRandomPairings(participants));
-        }
-
-        [Fact]
-        public void Generate_Test()
-        {
-            PairingGenerator generator = new PairingGenerator();
-            IEnumerable<PairingEntry> pairings = generator.Generate(sessionId: "current", testParticipants, testPairingHistory);
-            Assert.Equal(2, pairings.Count());
-            
-            foreach (PairingEntry pair in pairings)
-            {
-                if (pair.participant1.email == "participant3@email.com")
-                {
-                    Assert.Equal("participant6@email.com", pair.participant2.email);
-                }
-                else if (pair.participant1.email == "participant6@email.com")
-                {
-                    Assert.Equal("participant3@email.com", pair.participant2.email);
-                } 
-                else if (pair.participant1.email == "participant4@email.com")
-                {
-                    Assert.Equal("participant5@email.com", pair.participant2.email);
-                } else {
-                    Assert.Equal("participant5@email.com", pair.participant1.email);
-                    Assert.Equal("participant4@email.com", pair.participant2.email);
-                }
-            }
-        }
-
-        [Fact]
         public void Generate_ThrowsWithOddNumberParticipants()
         {
+            string fileContent = File.ReadAllText(Defaults.ParticipantsFileName);
+            IEnumerable<Participant> allParticipants = JsonConvert.DeserializeObject<IEnumerable<Participant>>(fileContent);
+
             PairingGenerator generator = new PairingGenerator();
-            Assert.Throws<Exception>(() => generator.Generate(sessionId: "old", testParticipants, testPairingHistory));
+            Assert.Throws<Exception>(() => generator.Generate(sessionId: "old", allParticipants, new Dictionary<string, PairingHistory>()));
         }
 
         [Fact]
         public void Execute_ReadFromFiles()
         {
-            string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData");
             PairingGenerator generator = new PairingGenerator {
-                PathToHistoricalData = testDataPath,
+                ParticipantsFile = Defaults.ParticipantsFileName,
+                PairingHistoryFile = Defaults.PairingHistoryFileName,
                 SessionId = "Current"
             };
             
@@ -264,24 +69,25 @@ namespace BuddyChatCLI.test
             Assert.True(File.Exists(expectedOutputFile));
             
             string actualPairingsContent = File.ReadAllText(expectedOutputFile);
-            IEnumerable<PairingEntry> pairings = JsonConvert.DeserializeObject<IEnumerable<PairingEntry>>(actualPairingsContent);
+            PairingList pairings = JsonConvert.DeserializeObject<PairingList>(actualPairingsContent);
 
-            foreach (PairingEntry pair in pairings)
+            // Expect participant 1 and 2 to be paired and 4 and 5 to be paired.
+            foreach (PairingList.Entry pair in pairings.pairings)
             {
-                if (pair.participant1.email == "participant1@email.com")
+                if (pair.participant1Email == "participant1@email.com")
                 {
-                    Assert.Equal("participant5@email.com", pair.participant2.email);
+                    Assert.Equal("participant2@email.com", pair.participant2Email);
                 }
-                else if (pair.participant1.email == "participant5@email.com")
+                else if (pair.participant1Email == "participant2@email.com")
                 {
-                    Assert.Equal("participant1@email.com", pair.participant2.email);
+                    Assert.Equal("participant1@email.com", pair.participant2Email);
                 } 
-                else if (pair.participant1.email == "participant2@email.com")
+                else if (pair.participant1Email == "participant4@email.com")
                 {
-                    Assert.Equal("participant4@email.com", pair.participant2.email);
+                    Assert.Equal("participant5@email.com", pair.participant2Email);
                 } else {
-                    Assert.Equal("participant4@email.com", pair.participant1.email);
-                    Assert.Equal("participant2@email.com", pair.participant2.email);
+                    Assert.Equal("participant5@email.com", pair.participant1Email);
+                    Assert.Equal("participant4@email.com", pair.participant2Email);
                 }
             }
 
