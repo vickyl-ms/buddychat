@@ -35,14 +35,21 @@ namespace BuddyChatCLI
         [Option(shortName: 't',
                 longName: "templatePath",
                 Required = true,
-                HelpText = "Path to Outlook template file in .oft format.")]
-        public string TemplatePath { get; set; }
+                HelpText = "Path to Outlook template file in .oft format. Defaults to emailtemplate.oft in current directory")]
+        public string TemplatePath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.EmailTemplateFilename);
 
-        [Option(shortName: 'p',
+        [Option(shortName: 'n',
                 longName: "pairingsPath",
                 Required = true,
-                HelpText = "Path to json file containing the pairings.")]
-        public string Pairings { get; set; }
+                HelpText = "Path to json file containing the pairings. Deafults to newpairings.json in current directory.")]
+        public string NewPairingsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
+
+        [Option(shortName: 'p',
+        longName: "ParticipantsFile",
+        Required = false,
+        HelpText = "The location of the participant json file. Default is participants.json in current directory.")]
+        public string ParticipantsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.ParticipantsFileName);
+
 
         [Option(shortName: 'o',
                 longName: "outputPath",
@@ -54,11 +61,11 @@ namespace BuddyChatCLI
         {
             (this.subject, this.htmlBody) = ReadTemplate(TemplatePath);
 
-            IEnumerable<PairingEntry> pairings = GetPairingsFromFile(this.Pairings);
+            IEnumerable<PairingList.Entry> pairings = GetPairingsFromFile(this.NewPairingsFile);
 
-            foreach(PairingEntry pairing in pairings)
+            foreach(PairingList.Entry pairing in pairings)
             {
-                GenerateEmail(pairing.participant1, pairing.participant2);
+                //GenerateEmail(pairing.participant1, pairing.participant2);
             }
 
             return 0;
@@ -96,11 +103,11 @@ namespace BuddyChatCLI
         /// </summary>
         /// <param name="filePath">The file path</param>
         /// <returns>List of <see cref="PairingEntry"/></returns>
-        internal static IEnumerable<PairingEntry> GetPairingsFromFile(string filePath)
+        internal static IEnumerable<PairingList.Entry> GetPairingsFromFile(string filePath)
         {
             string pairingsJson = File.ReadAllText(filePath);
 
-            return JsonConvert.DeserializeObject<IEnumerable<PairingEntry>>(pairingsJson);
+            return JsonConvert.DeserializeObject<IEnumerable<PairingList.Entry>>(pairingsJson);
         }
 
         /// <summary>

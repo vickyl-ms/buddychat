@@ -34,7 +34,6 @@
     "name": "FirstName4 LastName4",
     "email": "participant4@email.com",
     "session_participated": [
-        "old",
         "curRent"
     ],
     "data": {

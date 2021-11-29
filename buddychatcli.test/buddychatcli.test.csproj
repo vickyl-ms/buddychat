@@ -25,13 +25,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\signups.csv">
+    <None Update="TestData\Signups.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\signupsconfig.json">
+    <None Update="TestData\SignupsConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\Pairings.json">
+    <None Update="TestData\NewPairings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="TestData\Participants.json">
