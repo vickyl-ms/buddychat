@@ -1,9 +1,9 @@
 ﻿## Welcome to the buddy chat repo!
 
-This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat program for a group.
+This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat program for a group. For each round, you send out a signup form where people can either enter their info or opt into using their previous signup information.
 
-#How to use:
-##1. Create a signup form using https://forms.microsoft.com/ that gets name, email and various additional data fields. Download responses as csv files. This is an example of the kind of data you might want to collect in the signup form.
+## How to use:
+### 1. Create a signup form using https://forms.microsoft.com/ that gets name, email and various additional data fields. Download responses as csv files. This is an example of the kind of data you might want to collect in the signup form.
 
 ```
   "name": "Spike Spiegel",
@@ -17,7 +17,7 @@ This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat p
       "answer2": "That time we went on Tarsis and found Ein."
     }
 ```
-##2. Create a signupsconfig.json file that describes how to translate from the excel response form from your signup survey into a Participant data structure as seen above.
+### 2. Create a signupsconfig.json file that describes how to translate from the excel response form from your signup survey into a Participant data structure as seen above.
 ```
 {
     "emailIndex": 3,
@@ -42,7 +42,8 @@ This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat p
     ]
 }
 ```
-##3. Create or update the participants data file
+### 3. Create or update the participants data file
+If no dataEntries are present in the new signup information, it's assumed participant wanted to use previous signup data.
 ```
 REM Choose a session name to use for generating files for each round of the chat program
 REM The first time, you have no previous data
@@ -51,7 +52,7 @@ buddychatcli.exe updateParticipants -s 211108
 REM Once you have previous data, pass in the participant data file from the previous round
 buddychatcli.exe updateParticipants -h ..\211007\Participants.json -s 211108
 ```
-##4. Create random pairings for people who signed up in a session making sure that they haven't buddied up in the past
+### 4. Create random pairings for people who signed up in a session making sure that they haven't buddied up in the past
 ```
 REM Run from directory with the participants.json file from the previous step
 
@@ -61,7 +62,7 @@ buddychatcli.exe CreatePairings -s 211108
 REM Once you have previous data, pass in the pairing history data file from the previous round
 buddychatcli.exe CreatePairings -s 211108 -h ..\21107\PairingHistory.json
 ```
-##5. Create or update the pairing history data file
+### 5. Create or update the pairing history data file
 ```
 REM Run from directory with the newpairings.json file from the previous step
 
@@ -71,9 +72,8 @@ buddychatcli.exe UpdatePairingHistory
 REM Once you have previous data, pass in the pairing history data file from the previous round
 buddychatcli.exe UpdatePairingHistory -h ..\211007\PairingHistory.json
 ```
-##6. Generate outlook emails using an email template
-##3. \[optional\] Create an outlook email template (\*.oft) file with placeholders for your data
-###Example template:
+### 6. \[optional\] Create an outlook email template (\*.oft) file with placeholders for your data
+#### Example template:
 ```
 🎺 We would like to introduce you to...
 
@@ -92,7 +92,7 @@ Please reach out to your assigned buddy this week and schedule a time (suggested
 
 (But <participant2.name>, if you don't see a meeting invite in 3 days, consider checking in with your buddy.)
 ```
-###To generate emails:
+#### To generate emails:
 ```
 REM Run from directory with newpairings.json file
 buddychatcli.exe CreateEmails -o emails
