@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,7 +117,7 @@ namespace BuddyChatCLI
         {
             if (!File.Exists(this.NewPairingsFile))
             {
-                string errMsg = $"No '{this.NewPairingsFile}' found. New signup file must exist.";
+                string errMsg = $"No '{this.NewPairingsFile}' found. New pairings file must exist.";
                 throw new ArgumentException(errMsg);
             }
 
@@ -147,7 +148,10 @@ namespace BuddyChatCLI
                 }
             }
 
-            string json = JsonConvert.SerializeObject(updatedPairingHistories, Formatting.Indented);
+            // Sort dictionary by converting it to SortedDictionary
+            SortedDictionary<string, PairingHistory> sortedDictionary = new SortedDictionary<string, PairingHistory>(updatedPairingHistories);
+
+            string json = JsonConvert.SerializeObject(sortedDictionary, Formatting.Indented);
             File.WriteAllText(updatedPairingHistoryFile, json);
             Console.WriteLine("Participant data successfully written to " + updatedPairingHistoryFile);
         }

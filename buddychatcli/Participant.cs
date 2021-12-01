@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace BuddyChatCLI
 {
@@ -8,6 +9,8 @@ namespace BuddyChatCLI
     {
         // participant full name
         public string name { get; set; }
+        
+        // Do not emit to json docs
         public string first_name => name.Split(' ')[0];
 
         // participant email

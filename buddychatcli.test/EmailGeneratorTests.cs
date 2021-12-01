@@ -76,19 +76,5 @@ Question =
 
             Assert.Equal(expectedHtmlBody, result);
         }
-
-        // [Fact]
-        // public static void GetPairingsFromFileTest()
-        // {
-        //     string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "Pairings.json");
-
-        //     List<PairingEntry> pairings = EmailGenerator.GetPairingsFromFile(testDataPath).ToList();
-
-        //     Assert.Equal(2, pairings.Count());
-        //     Assert.Equal("FirstName1@test.com", pairings[0].participant1Email);
-        //     Assert.Equal("FirstName2@test.com", pairings[0].participant2Email);
-        //     Assert.Equal("FirstName3@test.com", pairings[1].participant1Email);
-        //     Assert.Equal("FirstName4@test.com", pairings[1].participant2Email);
-        // }
     }
 }
