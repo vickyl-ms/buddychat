@@ -34,14 +34,14 @@ namespace BuddyChatCLI
 
         [Option(shortName: 't',
                 longName: "templatePath",
-                Required = true,
+                Required = false,
                 HelpText = "Path to Outlook template file in .oft format. Defaults to emailtemplate.oft in current directory")]
         public string TemplatePath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.EmailTemplateFilename);
 
         [Option(shortName: 'n',
-                longName: "pairingsPath",
-                Required = true,
-                HelpText = "Path to json file containing the pairings. Deafults to newpairings.json in current directory.")]
+                longName: "NewPairingsFile",
+                Required = false,
+                HelpText = "Filename of new pairings json file generated with CreatePairing command. Defaults to NewPairings.json in current directory")]
         public string NewPairingsFile { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), Defaults.NewPairingFileName);
 
         [Option(shortName: 'p',
@@ -59,16 +59,68 @@ namespace BuddyChatCLI
 
         public int Execute()
         {
+            ValidateOptions();
+            
             (this.subject, this.htmlBody) = ReadTemplate(TemplatePath);
 
-            IEnumerable<PairingList.Entry> pairings = GetPairingsFromFile(this.NewPairingsFile);
+            PairingList pairings = GetPairingsFromFile(this.NewPairingsFile);
+            
+            IDictionary<string, Participant> participants = GetParticipantsFromFile(this.ParticipantsFile);
 
-            foreach(PairingList.Entry pairing in pairings)
+            foreach(PairingList.Entry pairing in pairings.pairings)
             {
-                //GenerateEmail(pairing.participant1, pairing.participant2);
+                GenerateEmail(participants[pairing.participant1Email], participants[pairing.participant2Email]);
             }
 
             return 0;
+        }
+
+        private void ValidateOptions()
+        {
+            if (!File.Exists(this.NewPairingsFile))
+            {
+                string errMsg = $"No '{this.NewPairingsFile}' found. New pairings file must exist.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!File.Exists(this.ParticipantsFile))
+            {
+                string errMsg = $"No '{this.ParticipantsFile}' found. Participant data file must exist.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!File.Exists(this.TemplatePath))
+            {
+                string errMsg = $"No '{this.TemplatePath}' found. Email template file must exist.";
+                throw new ArgumentException(errMsg);
+            }
+
+            if (!Directory.Exists(this.OutputFolder))
+            {
+                Console.WriteLine($"Output dir '{this.OutputFolder}' does not exist. Creating directory.");
+                Directory.CreateDirectory(this.OutputFolder);
+            }
+        }
+
+        /// <summary>
+        /// Read in Participants data and convert to dictionary keyed by email
+        /// </summary>
+        /// <param name="participantsFile"></param>
+        /// <returns></returns>
+        private IDictionary<string, Participant> GetParticipantsFromFile(string participantsFile)
+        {
+            string participantsJson = File.ReadAllText(participantsFile);
+            IList<Participant> participants = JsonConvert.DeserializeObject<IList<Participant>>(participantsJson);
+            
+            // convert to dictionary keyed by email
+            IDictionary<string, Participant> participantDictionary = new Dictionary<string, Participant>();
+            foreach (Participant p in participants)
+            {
+                p.Validate();
+                participantDictionary.Add(p.email, p);
+            }
+
+            return participantDictionary;
         }
 
         /// <summary>
@@ -103,11 +155,11 @@ namespace BuddyChatCLI
         /// </summary>
         /// <param name="filePath">The file path</param>
         /// <returns>List of <see cref="PairingEntry"/></returns>
-        internal static IEnumerable<PairingList.Entry> GetPairingsFromFile(string filePath)
+        internal static PairingList GetPairingsFromFile(string filePath)
         {
             string pairingsJson = File.ReadAllText(filePath);
 
-            return JsonConvert.DeserializeObject<IEnumerable<PairingList.Entry>>(pairingsJson);
+            return JsonConvert.DeserializeObject<PairingList>(pairingsJson);
         }
 
         /// <summary>
