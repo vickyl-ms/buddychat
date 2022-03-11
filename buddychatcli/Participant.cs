@@ -48,6 +48,15 @@ namespace BuddyChatCLI
             return output.ToString();
         }
 
+        /// <summary>
+        /// Returns the part of email before the @ sign
+        /// </summary>
+        /// <returns></returns>
+        public string GetEmailAccountName()
+        {
+            return email.Split('@', 2, StringSplitOptions.TrimEntries)[0];
+        }
+
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(email))

@@ -132,7 +132,7 @@ namespace BuddyChatCLI
         public void GenerateEmail(Participant participant1, Participant participant2)
         {
             string newHtmlBody = ReplacePlaceholders(htmlBody, participant1, participant2);
-            string file = Path.Combine(this.OutputFolder, $"{participant1.name} - {participant2.name}.oft");
+            string file = Path.Combine(this.OutputFolder, $"{participant1.GetEmailAccountName()}-{participant2.GetEmailAccountName()}.oft");
 
             Email email = new Email(null, subject);
             email.Recipients.AddTo(participant1.email);
