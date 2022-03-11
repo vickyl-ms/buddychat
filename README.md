@@ -2,6 +2,16 @@
 
 This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat program for a group. For each round, you send out a signup form where people can either enter their info or opt into using their previous signup information.
 
+## How to build
+```dotnet build```
+
+## How to run tests
+```dotnet test```
+
+## How to deploy
+```dotnet publish```
+Buddychatcli project is set to build for x64 as a standalone application
+
 ## How to use:
 ### 1. Create a signup form using https://forms.microsoft.com/ that gets name, email and various additional data fields. Download responses as csv files. This is an example of the kind of data you might want to collect in the signup form.
 
@@ -42,27 +52,43 @@ This project contains a CommandLine (CLI) utility for running a 1:1 buddy chat p
     ]
 }
 ```
-### 3. Create or update the participants data file
+### 3. Set up environment
+Create env vars that specify path to previous data and new session name. Add cli to path.
+```
+set CURRENT_SESSION_NAME=211108
+set PATH=%PATH%;<replace with path to buddychatcli.exe>
+
+mkdir %CURRENT_SESSION_NAME%
+pushd %CURRENT_SESSION_NAME%
+
+REM If you have data from previous session, set macro and copy over config & email template files
+set LAST_SESSION_PATH=..\211007
+
+copy %LAST_SESSION_PATH%\signupsconfig.json
+copy %LAST_SESSION_PATH%\emailtemplate.oft
+
+```
+### 4. Create or update the participants data file
 If no dataEntries are present in the new signup information, it's assumed participant wanted to use previous signup data.
 ```
 REM Choose a session name to use for generating files for each round of the chat program
 REM The first time, you have no previous data
-buddychatcli.exe updateParticipants -s 211108
+buddychatcli.exe updateParticipants -s %CURRENT_SESSION_NAME%
 
 REM Once you have previous data, pass in the participant data file from the previous round
-buddychatcli.exe updateParticipants -h ..\211007\Participants.json -s 211108
+buddychatcli.exe updateParticipants -h %LAST_SESSION_PATH%\Participants.json -s %CURRENT_SESSION_NAME%
 ```
-### 4. Create random pairings for people who signed up in a session making sure that they haven't buddied up in the past
+### 5. Create random pairings for people who signed up in a session making sure that they haven't buddied up in the past
 ```
 REM Run from directory with the participants.json file from the previous step
 
 REM The first time, you have no previous data
-buddychatcli.exe CreatePairings -s 211108
+buddychatcli.exe CreatePairings -s %CURRENT_SESSION_NAME%
 
 REM Once you have previous data, pass in the pairing history data file from the previous round
-buddychatcli.exe CreatePairings -s 211108 -h ..\21107\PairingHistory.json
+buddychatcli.exe CreatePairings -s %CURRENT_SESSION_NAME% -h %LAST_SESSION_PATH%\PairingHistory.json
 ```
-### 5. Create or update the pairing history data file
+### 6. Create or update the pairing history data file
 ```
 REM Run from directory with the newpairings.json file from the previous step
 
@@ -70,9 +96,9 @@ REM The first time, you have no previous data
 buddychatcli.exe UpdatePairingHistory
 
 REM Once you have previous data, pass in the pairing history data file from the previous round
-buddychatcli.exe UpdatePairingHistory -h ..\211007\PairingHistory.json
+buddychatcli.exe UpdatePairingHistory -h %LAST_SESSION_PATH%\PairingHistory.json
 ```
-### 6. \[optional\] Create an outlook email template (\*.oft) file with placeholders for your data
+### 7. \[optional\] Create an outlook email template (\*.oft) file with placeholders for your data
 #### Example template:
 ```
 🎺 We would like to introduce you to...
