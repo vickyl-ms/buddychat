@@ -121,7 +121,7 @@ namespace BuddyChatCLI
 
                 if (historicalParticipantsAsDictionary.TryGetValue(p.email.ToLowerInvariant(), out participantToUpdate))
                 {
-                    // check if new participant has data fields, completely replace historical data field if so
+                    // check if new participant has data fields, if so, merge with old fields
                     if (p.data.Count > 0)
                     {
                         Console.Out.WriteLine($"Participant '{p.ToString()}' had data updated:");
@@ -130,7 +130,15 @@ namespace BuddyChatCLI
                         Console.Out.WriteLine("New data:");
                         Console.Out.WriteLine(p.ToDetailedString());
                         
-                        participantToUpdate.data = p.data;
+                        foreach (KeyValuePair<string,string> dataEntry in p.data)
+                        {
+                            if (participantToUpdate.data.ContainsKey(dataEntry.Key))
+                            {
+                                participantToUpdate.data.Remove(dataEntry.Key);
+                            }
+                            participantToUpdate.data.Add(dataEntry.Key, dataEntry.Value);
+                        }
+
                         numParticipantsUpdated++;
                     }
                     else
